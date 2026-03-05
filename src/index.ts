@@ -9,6 +9,8 @@ import authRoutes from './routes/auth.routes';
 import adminAuthRoutes from './routes/adminAuth.routes';
 import contentRoutes from './routes/admin/content.routes'; // Import content routes
 import adminQuestionRoutes from './routes/admin/question.routes'; // Import question routes
+import adminDashboardRoutes from './routes/admin/dashboard.routes'; // Import dashboard routes
+import adminUserRoutes from './routes/admin/user.routes'; // Import user routes
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin/auth', adminAuthRoutes);
 app.use('/api/v1/admin/content', contentRoutes); // Mount content routes under /api/v1/admin
 app.use('/api/v1/admin/questions', adminQuestionRoutes); // <-- Mount Question routes
+app.use('/api/v1/admin/dashboard', adminDashboardRoutes); // <-- Mount Dashboard
+app.use('/api/v1/admin/users', adminUserRoutes);          // <-- Mount Users
 
 // Health Check Route
 app.get('/health', (req, res) => {
