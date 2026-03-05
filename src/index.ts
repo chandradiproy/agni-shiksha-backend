@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import { initializeRedis } from './config/redis'; // Imports from src/config/redis/index.ts
 import authRoutes from './routes/auth.routes';
+import adminAuthRoutes from './routes/adminAuth.routes';
 
 dotenv.config();
 
@@ -18,7 +19,8 @@ app.use(express.json()); // Parses incoming JSON requests
 app.use(morgan('dev')); // Logs API requests, methods, and status codes to the terminal
 
 // Mount Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/admin/auth', adminAuthRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {
