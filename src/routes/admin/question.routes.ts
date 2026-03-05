@@ -3,7 +3,13 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { requireAdmin } from '../../middlewares/adminAuth';
-import { previewBulkQuestions, commitBulkQuestions } from '../../controllers/admin/question.controller';
+import { 
+  previewBulkQuestions, 
+  commitBulkQuestions,
+  getTestSeriesQuestions,
+  updateQuestion,
+  deleteQuestion
+} from '../../controllers/admin/question.controller';
 
 const router = Router();
 
@@ -13,13 +19,21 @@ const upload = multer({
 });
 
 // ==========================================
-// QUESTION UPLOAD FLOW (Protected by requireAdmin)
+// BULK UPLOAD FLOW
 // ==========================================
+router.post('/test-series/:testSeriesId/preview-bulk', requireAdmin, upload.single('file'), previewBulkQuestions);
+router.post('/test-series/:testSeriesId/commit-bulk', requireAdmin, commitBulkQuestions);
 
-// STEP 1: Upload CSV file, get parsed & validated preview back (Does not save to DB)
-router.post('/preview-bulk', requireAdmin, upload.single('file'), previewBulkQuestions);
+// ==========================================
+// INDIVIDUAL QUESTION MANAGEMENT
+// ==========================================
+// Fetch all questions to populate the Admin UI table
+router.get('/test-series/:testSeriesId', requireAdmin, getTestSeriesQuestions);
 
-// STEP 2: Submit the corrected JSON array from the frontend table to save to DB
-router.post('/commit-bulk', requireAdmin, commitBulkQuestions);
+// Update a specific question (using the same strict validation and sanitization as bulk)
+router.put('/test-series/:testSeriesId/question/:questionId', requireAdmin, updateQuestion);
 
-export default router;  
+// Delete a specific question
+router.delete('/test-series/:testSeriesId/question/:questionId', requireAdmin, deleteQuestion);
+
+export default router;

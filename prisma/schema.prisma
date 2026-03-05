@@ -145,6 +145,7 @@ model TestSeries {
   is_all_india             Boolean   @default(false)
   is_active                Boolean   @default(true)
   is_scheduled             Boolean   @default(false)
+  is_published             Boolean   @default(false)
   scheduled_at             DateTime? @db.Timestamptz
   available_from           DateTime  @default(now()) @db.Timestamptz
   available_until          DateTime? @db.Timestamptz

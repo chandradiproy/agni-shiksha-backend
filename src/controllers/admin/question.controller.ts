@@ -9,7 +9,7 @@ import { sanitizeContent } from '../../utils/sanitizer';
 
 // Zod Schema (works for both CSV strings and Frontend JSON numbers)
 const questionRowSchema = z.object({
-  exam_slug: z.string().min(1, 'Exam slug is required'),
+  // REMOVED exam_slug: We now get the exact context directly from the API URL!
   subject: z.string().min(1, 'Subject is required'),
   topic: z.string().min(1, 'Topic is required'),
   sub_topic: z.string().optional(),
@@ -21,17 +21,21 @@ const questionRowSchema = z.object({
   option_b: z.string().min(1, 'Option B is required'),
   option_c: z.string().optional(),
   option_d: z.string().optional(),
-  correct_option: z.enum(['a', 'b', 'c', 'd'], {
-    message: 'Must be exactly a, b, c, or d'
+  correct_option: z.enum(['a', 'b', 'c', 'd'], { 
+    message: 'Must be a, b, c, or d',
+    
   }),
   explanation: z.string().min(1, 'Explanation is required'),
   explanation_hindi: z.string().optional(),
-  difficulty: z.enum(['easy', 'medium', 'hard'], {
+  difficulty: z.enum(['easy', 'medium', 'hard'], { 
     message: 'Must be easy, medium, or hard'
   }),
   cognitive_type: z.string().default('conceptual'),
   marks: z.preprocess((val) => Number(val) || 1, z.number()),
-  tags: z.string().optional(),
+  
+  // PREPROCESS FIX: If frontend sends an array, join it into a string so it matches the CSV format!
+  tags: z.preprocess((val) => Array.isArray(val) ? val.join(',') : val, z.string().optional()),
+  
   source: z.string().default('original'),
   pyq_year: z.preprocess((val) => val ? Number(val) : null, z.number().nullable().optional())
 });
@@ -41,8 +45,19 @@ const questionRowSchema = z.object({
 // ==========================================
 export const previewBulkQuestions = async (req: Request, res: Response) => {
   try {
+    const { testSeriesId } = req.params;
+
     if (!req.file) {
       return res.status(400).json({ error: 'No CSV file uploaded.' });
+    }
+
+    // Validate that the Test Series actually exists before parsing the file
+    const testSeries = await prisma.testSeries.findUnique({ 
+      where: { id: testSeriesId as string } 
+    });
+
+    if (!testSeries) {
+      return res.status(404).json({ error: 'Test Series not found. Cannot preview questions.' });
     }
 
     const rawRows: any[] = await new Promise((resolve, reject) => {
@@ -58,33 +73,22 @@ export const previewBulkQuestions = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'The CSV file is empty.' });
     }
 
-    // Pre-fetch Exams for validation
-    const exams = await prisma.exam.findMany({ select: { slug: true } });
-    const validSlugs = new Set(exams.map(e => e.slug));
-
     const previewData = rawRows.map((row, index) => {
       let isValid = true;
       const fieldErrors: Record<string, string> = {};
 
-      // 1. Validate with Zod
+      // 1. Validate with Zod (No need to check validSlugs manually anymore!)
       const validation = questionRowSchema.safeParse(row);
       if (!validation.success) {
         isValid = false;
-        // Map Zod errors to specific fields so the UI knows exactly which table cell to highlight red
         validation.error.issues.forEach((issue: z.ZodIssue) => {
           const fieldName = issue.path[0] as string;
           fieldErrors[fieldName] = issue.message;
         });
       }
 
-      // 2. Validate Exam Slug exists
-      if (row.exam_slug && !validSlugs.has(row.exam_slug)) {
-        isValid = false;
-        fieldErrors['exam_slug'] = `Exam '${row.exam_slug}' not found`;
-      }
-
       return {
-        id: `row-${index}`, // Unique ID for React map() keys
+        id: `row-${index}`, 
         data: row,
         isValid,
         errors: fieldErrors
@@ -110,14 +114,21 @@ export const previewBulkQuestions = async (req: Request, res: Response) => {
 // ==========================================
 export const commitBulkQuestions = async (req: Request, res: Response) => {
   try {
-    const { questions } = req.body; // Expecting an array of question objects from frontend
+    const { testSeriesId } = req.params;
+    const { questions } = req.body; 
 
     if (!Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ error: 'No questions provided for upload.' });
     }
 
-    const exams = await prisma.exam.findMany({ select: { id: true, slug: true } });
-    const examMap = new Map(exams.map(e => [e.slug, e.id]));
+    // Fetch Test Series to automatically link BOTH exam_id and test_series_id
+    const testSeries = await prisma.testSeries.findUnique({ 
+      where: { id: testSeriesId as string } 
+    });
+
+    if (!testSeries) {
+      return res.status(404).json({ error: 'Test Series not found.' });
+    }
 
     const validQuestions: any[] = [];
     const finalErrors: any[] = [];
@@ -132,12 +143,6 @@ export const commitBulkQuestions = async (req: Request, res: Response) => {
       }
 
       const row = validation.data;
-      const exam_id = examMap.get(row.exam_slug);
-
-      if (!exam_id) {
-        finalErrors.push({ row: index + 1, error: 'Invalid exam slug' });
-        return;
-      }
 
       // Assemble and sanitize
       const options = [
@@ -150,7 +155,8 @@ export const commitBulkQuestions = async (req: Request, res: Response) => {
       const tagsArray = row.tags ? row.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
 
       validQuestions.push({
-        exam_id,
+        exam_id: testSeries.exam_id,         // <--- AUTO-ASSIGNED!
+        test_series_id: testSeries.id,       // <--- AUTO-ASSIGNED!
         subject: row.subject,
         topic: row.topic,
         sub_topic: row.sub_topic || null,
@@ -187,5 +193,115 @@ export const commitBulkQuestions = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Commit Upload Error:', error);
     res.status(500).json({ error: 'Failed to commit questions to database' });
+  }
+};
+
+// ==========================================
+// STEP 3: MANAGE INDIVIDUAL QUESTIONS
+// ==========================================
+
+// Get all questions for a specific Test Series (Used for the UI Preview Table)
+export const getTestSeriesQuestions = async (req: Request, res: Response) => {
+  try {
+    const { testSeriesId } = req.params;
+    
+    const questions = await prisma.question.findMany({
+      where: { test_series_id: testSeriesId as string },
+      orderBy: { display_order: 'asc' }
+    });
+
+    res.status(200).json({ data: questions });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch questions' });
+  }
+};
+
+// Update a single question
+export const updateQuestion = async (req: Request, res: Response) => {
+  try {
+    const { testSeriesId, questionId } = req.params;
+
+    // 1. Security Check: Is the Test Series locked?
+    const testSeries = await prisma.testSeries.findUnique({ where: { id: testSeriesId as string } });
+    if (!testSeries) return res.status(404).json({ error: 'Test Series not found' });
+    
+    if ((testSeries as any).is_published === true) {
+      return res.status(403).json({ error: 'Test Series is live. Cannot edit questions to preserve score integrity.' });
+    }
+
+    // 2. Validate the incoming JSON using the same Zod schema from the bulk upload!
+    const validation = questionRowSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        details: validation.error.issues.map(e => `${e.path.join('.')}: ${e.message}`) 
+      });
+    }
+
+    const row = validation.data;
+
+    // 3. Sanitize options & content
+    const options = [
+      { id: 'a', text: sanitizeContent(row.option_a), is_correct: row.correct_option === 'a' },
+      { id: 'b', text: sanitizeContent(row.option_b), is_correct: row.correct_option === 'b' },
+    ];
+    if (row.option_c) options.push({ id: 'c', text: sanitizeContent(row.option_c), is_correct: row.correct_option === 'c' });
+    if (row.option_d) options.push({ id: 'd', text: sanitizeContent(row.option_d), is_correct: row.correct_option === 'd' });
+
+    const tagsArray = row.tags ? row.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    // 4. Update Database
+    const updatedQuestion = await prisma.question.update({
+      where: { id: questionId as string },
+      data: {
+        subject: row.subject,
+        topic: row.topic,
+        sub_topic: row.sub_topic || null,
+        section: row.section,
+        question_type: row.question_type,
+        question_text: sanitizeContent(row.question_text),
+        question_text_hindi: sanitizeContent(row.question_text_hindi),
+        options,
+        correct_option_id: row.correct_option,
+        explanation: sanitizeContent(row.explanation),
+        explanation_hindi: sanitizeContent(row.explanation_hindi),
+        difficulty: row.difficulty,
+        question_type_cognitive: row.cognitive_type,
+        marks: row.marks,
+        tags: tagsArray,
+        source: row.source,
+        pyq_year: row.pyq_year,
+      }
+    });
+
+    res.status(200).json({ message: 'Question updated successfully', question: updatedQuestion });
+  } catch (error) {
+    console.error('Update Question Error:', error);
+    res.status(500).json({ error: 'Failed to update question' });
+  }
+};
+
+// Delete a single question
+export const deleteQuestion = async (req: Request, res: Response) => {
+  try {
+    const { testSeriesId, questionId } = req.params;
+
+    // 1. Security Check: Is the Test Series locked?
+    const testSeries = await prisma.testSeries.findUnique({ where: { id: testSeriesId as string } });
+    if (!testSeries) return res.status(404).json({ error: 'Test Series not found' });
+    
+    if ((testSeries as any).is_published === true) {
+      return res.status(403).json({ error: 'Test Series is live. Cannot delete questions.' });
+    }
+
+    // 2. Delete the Question
+    await prisma.question.delete({
+      where: { id: questionId as string }
+    });
+
+    res.status(200).json({ message: 'Question deleted successfully' });
+  } catch (error) {
+    console.error('Delete Question Error:', error);
+    res.status(500).json({ error: 'Failed to delete question' });
   }
 };

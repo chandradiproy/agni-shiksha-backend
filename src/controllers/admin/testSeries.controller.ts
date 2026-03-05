@@ -7,13 +7,25 @@ import prisma from '../../config/db';
 export const createTestSeries = async (req: Request, res: Response) => {
   try {
     const { 
-      exam_id, title, description, type, test_type, 
-      total_questions, duration_minutes, total_marks, difficulty 
+      exam_id, title, description, type, test_type, subject,
+      total_questions, duration_minutes, total_marks, difficulty,
+      negative_marking, negative_marks_per_wrong, is_all_india,
+      is_active, is_scheduled, is_published, scheduled_at,
+      available_from, available_until, max_attempts, show_solutions,
+      show_solutions_after, instructions, sections, price_if_standalone
     } = req.body;
 
-    // Basic validation
-    if (!exam_id || !title || !type || !test_type || !total_questions || !duration_minutes || !total_marks || !difficulty) {
-      return res.status(400).json({ error: 'Missing required test series fields' });
+    // Strict validation for core required fields based on Schema
+    if (!exam_id || !title || !type || !test_type || total_questions === undefined || duration_minutes === undefined || total_marks === undefined || !difficulty) {
+      return res.status(400).json({ error: 'Missing required test series core fields' });
+    }
+
+    const parsedAvailableFrom = available_from ? new Date(available_from) : new Date();
+    const parsedAvailableUntil = available_until ? new Date(available_until) : null;
+
+    // LOGICAL DATE VALIDATION: Ensure 'Until' is strictly after 'From'
+    if (parsedAvailableUntil && parsedAvailableFrom >= parsedAvailableUntil) {
+      return res.status(400).json({ error: '"Available Until" date must be strictly after the "Available From" date.' });
     }
 
     const newTestSeries = await prisma.testSeries.create({
@@ -21,17 +33,29 @@ export const createTestSeries = async (req: Request, res: Response) => {
         exam_id,
         title,
         description,
-        type, // free, premium
-        test_type, // full_mock, sectional, etc.
-        total_questions,
-        duration_minutes,
-        total_marks,
+        type, 
+        test_type, 
+        subject,
+        total_questions: Number(total_questions),
+        duration_minutes: Number(duration_minutes),
+        total_marks: Number(total_marks),
+        negative_marking: negative_marking || false,
+        negative_marks_per_wrong: negative_marks_per_wrong ? Number(negative_marks_per_wrong) : 0.00,
         difficulty,
-        subject: req.body.subject,
-        negative_marking: req.body.negative_marking || false,
-        negative_marks_per_wrong: req.body.negative_marks_per_wrong || 0.00,
-        is_all_india: req.body.is_all_india || false,
-        sections: req.body.sections || []
+        is_all_india: is_all_india || false,
+        is_active: is_active ?? true,
+        is_scheduled: is_scheduled || false,
+        is_published: is_published || false,
+        // Parse Dates if provided
+        scheduled_at: scheduled_at ? new Date(scheduled_at) : null,
+        available_from: parsedAvailableFrom,
+        available_until: parsedAvailableUntil,
+        max_attempts: max_attempts ? Number(max_attempts) : 3,
+        show_solutions: show_solutions ?? true,
+        show_solutions_after: show_solutions_after || 'immediate',
+        instructions,
+        sections: sections || [], // Handled as JSON
+        price_if_standalone: price_if_standalone ? Number(price_if_standalone) : null
       }
     });
 
@@ -53,5 +77,81 @@ export const getTestSeriesByExam = async (req: Request, res: Response) => {
     res.status(200).json({ data: testSeries });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch test series' });
+  }
+};
+
+// Update a Test Series
+export const updateTestSeries = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = { ...req.body };
+
+    // 1. Fetch existing test to check publication status
+    const existingTest = await prisma.testSeries.findUnique({ where: { id: id as string } });
+    if (!existingTest) {
+      return res.status(404).json({ error: 'Test Series not found' });
+    }
+
+    // 2. VALIDATION LOCK: If it is already published, we block structural changes.
+    if (existingTest.is_published === true) {
+      const forbiddenLiveEdits = ['total_questions', 'total_marks', 'duration_minutes', 'negative_marks_per_wrong'];
+      const attemptedForbiddenEdits = forbiddenLiveEdits.filter(field => updateData[field] !== undefined);
+      
+      if (attemptedForbiddenEdits.length > 0) {
+        return res.status(403).json({ 
+          error: `Cannot modify structural fields (${attemptedForbiddenEdits.join(', ')}) while the test is published. Please unpublish first.` 
+        });
+      }
+    }
+
+    // Format Dates if they are being updated
+    if (updateData.scheduled_at) updateData.scheduled_at = new Date(updateData.scheduled_at);
+    if (updateData.available_from) updateData.available_from = new Date(updateData.available_from);
+    if (updateData.available_until) updateData.available_until = new Date(updateData.available_until);
+
+    // 3. LOGICAL DATE VALIDATION
+    // We must check the incoming dates, or fallback to existing DB dates if only one is being updated.
+    const finalAvailableFrom = updateData.available_from !== undefined ? updateData.available_from : existingTest.available_from;
+    const finalAvailableUntil = updateData.available_until !== undefined ? updateData.available_until : existingTest.available_until;
+
+    if (finalAvailableUntil && finalAvailableFrom && finalAvailableFrom >= finalAvailableUntil) {
+      return res.status(400).json({ error: '"Available Until" date must be strictly after the "Available From" date.' });
+    }
+
+    const updatedTestSeries = await prisma.testSeries.update({
+      where: { id: id as string },
+      data: updateData
+    });
+
+    res.status(200).json({ message: 'Test Series updated successfully', testSeries: updatedTestSeries });
+  } catch (error) {
+    console.error('Update Test Series Error:', error);
+    res.status(500).json({ error: 'Failed to update test series' });
+  }
+};
+
+// Delete a Test Series
+export const deleteTestSeries = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const existingTest = await prisma.testSeries.findUnique({ where: { id: id as string } });
+    if (!existingTest) return res.status(404).json({ error: 'Test Series not found' });
+
+    // VALIDATION LOCK: Do not allow deletion of published tests
+    if (existingTest.is_published === true) {
+      return res.status(403).json({ 
+        error: 'Cannot delete a live Test Series to preserve student records. Unpublish it first.' 
+      });
+    }
+
+    await prisma.testSeries.delete({
+      where: { id: id as string }
+    });
+
+    res.status(200).json({ message: 'Test Series deleted successfully' });
+  } catch (error) {
+    console.error('Delete Test Series Error:', error);
+    res.status(500).json({ error: 'Failed to delete test series' });
   }
 };
