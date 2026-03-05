@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import { initializeRedis } from './config/redis'; // Imports from src/config/redis/index.ts
 import authRoutes from './routes/auth.routes';
 import adminAuthRoutes from './routes/adminAuth.routes';
+import contentRoutes from './routes/admin/content.routes'; // Import content routes
+import adminQuestionRoutes from './routes/admin/question.routes'; // Import question routes
 
 dotenv.config();
 
@@ -21,6 +23,8 @@ app.use(morgan('dev')); // Logs API requests, methods, and status codes to the t
 // Mount Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin/auth', adminAuthRoutes);
+app.use('/api/v1/admin/content', contentRoutes); // Mount content routes under /api/v1/admin
+app.use('/api/v1/admin/questions', adminQuestionRoutes); // <-- Mount Question routes
 
 // Health Check Route
 app.get('/health', (req, res) => {
