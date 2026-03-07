@@ -11,6 +11,10 @@ import contentRoutes from './routes/admin/content.routes'; // Import content rou
 import adminQuestionRoutes from './routes/admin/question.routes'; // Import question routes
 import adminDashboardRoutes from './routes/admin/dashboard.routes'; // Import dashboard routes
 import adminUserRoutes from './routes/admin/user.routes'; // Import user routes
+import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
+import adminCurrentAffairsRoutes from './routes/admin/currentAffairs.routes'; // <-- Import Current Affairs
+import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
+import studentCurrentAffairsRoutes from './routes/student/currentAffairs.routes'; // <-- Import Student Current Affairs
 
 dotenv.config();
 
@@ -29,11 +33,16 @@ app.use('/api/v1/admin/content', contentRoutes); // Mount content routes under /
 app.use('/api/v1/admin/questions', adminQuestionRoutes); // <-- Mount Question routes
 app.use('/api/v1/admin/dashboard', adminDashboardRoutes); // <-- Mount Dashboard
 app.use('/api/v1/admin/users', adminUserRoutes);          // <-- Mount Users
+app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
+app.use('/api/v1/admin/current-affairs', adminCurrentAffairsRoutes); // <-- Mount Current Affairs
+app.use('/api/v1/student/articles', studentCurrentAffairsRoutes); // <-- Mount Student Articles
 
 // Health Check Route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'Agni Shiksha API is running', timestamp: new Date() });
 });
+
+initCronJobs(); // Start the background jobs for news aggregation
 
 // Initialize Server
 const startServer = async () => {

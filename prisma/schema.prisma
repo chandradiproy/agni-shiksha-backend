@@ -315,3 +315,21 @@ model AdminUser {
 
   @@map("admin_users")
 }
+
+model Article {
+  id           String   @id @default(uuid()) @db.Uuid
+  title        String   @db.VarChar(500)
+  summary      String   @db.Text
+  source_name  String   @db.VarChar(100)
+  source_url   String   @unique @db.VarChar(1000) // Unique to prevent duplicate inserts
+  image_url    String?  @db.Text
+  published_at DateTime @db.Timestamptz
+  is_hidden    Boolean  @default(false)
+  is_pinned    Boolean  @default(false)
+  created_at   DateTime @default(now()) @db.Timestamptz
+  updated_at   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  @@index([published_at(sort: Desc)])
+  @@index([is_hidden])
+  @@map("articles")
+}
