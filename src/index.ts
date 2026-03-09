@@ -6,19 +6,21 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import { initializeRedis } from './config/redis'; // Imports from src/config/redis/index.ts
 import authRoutes from './routes/auth.routes';
-import adminAuthRoutes from './routes/adminAuth.routes';
 import contentRoutes from './routes/admin/content.routes'; // Import content routes
 import adminQuestionRoutes from './routes/admin/question.routes'; // Import question routes
 import adminDashboardRoutes from './routes/admin/dashboard.routes'; // Import dashboard routes
 import adminUserRoutes from './routes/admin/user.routes'; // Import user routes
-import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
 import adminCurrentAffairsRoutes from './routes/admin/currentAffairs.routes'; // <-- Import Current Affairs
-import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
-import studentCurrentAffairsRoutes from './routes/student/currentAffairs.routes'; // <-- Import Student Current Affairs
-import adminStudyRoutes from './routes/admin/study.routes'; // <-- Import Admin Study
-import studentStudyRoutes from './routes/student/study.routes'; // <-- Import Student Study
 import adminModerationRoutes from './routes/admin/moderation.routes'; // <-- Import Moderation
+import adminStudyRoutes from './routes/admin/study.routes'; // <-- Import Admin Study
+import adminGamificationRoutes from './routes/admin/gamification.routes'; // <-- Import Gamification Routes
 
+import adminAuthRoutes from './routes/adminAuth.routes';
+import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
+import studentStudyRoutes from './routes/student/study.routes'; // <-- Import Student Study
+import studentCurrentAffairsRoutes from './routes/student/currentAffairs.routes'; // <-- Import Student Current Affairs
+
+import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 
 dotenv.config();
 
@@ -39,6 +41,7 @@ app.use('/api/v1/admin/users', adminUserRoutes);          // <-- Mount Users
 app.use('/api/v1/admin/current-affairs', adminCurrentAffairsRoutes); // <-- Mount Current Affairs
 app.use('/api/v1/admin/study', adminStudyRoutes);       // <-- Mount Admin Study Routes
 app.use('/api/v1/admin/moderation', adminModerationRoutes); // <-- Mount Moderation Routes
+app.use('/api/v1/admin/gamification', adminGamificationRoutes); // <-- Mount Gamification Routes
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes

@@ -440,3 +440,33 @@ model Report {
 
   @@map("reports")
 }
+
+// ==========================================
+// 8. GAMIFICATION CONFIGURATION
+// ==========================================
+
+model QuestConfig {
+  id             String   @id @default(uuid()) @db.Uuid
+  title          String   @db.VarChar(200)
+  description    String   @db.Text
+  xp_reward      Int      @db.SmallInt
+  target_action  String   @db.VarChar(50) // e.g., 'TAKE_TEST', 'READ_ARTICLE', 'ASK_DOUBT'
+  target_count   Int      @db.SmallInt
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now()) @db.Timestamptz
+  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  @@map("quest_configs")
+}
+
+model BadgeConfig {
+  id                   String   @id @default(uuid()) @db.Uuid
+  badge_name           String   @db.VarChar(100)
+  description          String   @db.Text
+  icon_url             String   @db.Text
+  unlock_xp_threshold  Int
+  created_at           DateTime @default(now()) @db.Timestamptz
+  updated_at           DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  @@map("badge_configs")
+}
