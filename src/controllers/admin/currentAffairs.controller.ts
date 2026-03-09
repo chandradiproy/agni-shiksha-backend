@@ -13,7 +13,6 @@ export const triggerNewsSync = async (req: Request, res: Response) => {
     }
     res.status(200).json({ message: 'News sync completed successfully', data: result });
   } catch (error) {
-    console.error('News Sync Error:', error);
     res.status(500).json({ error: 'Internal server error during sync' });
   }
 };
@@ -44,7 +43,6 @@ export const getAdminArticles = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Get Admin Articles Error:', error);
     res.status(500).json({ error: 'Failed to fetch articles' });
   }
 };
@@ -67,5 +65,47 @@ export const updateArticleStatus = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Update Article Status Error:', error);
     res.status(500).json({ error: 'Failed to update article status' });
+  }
+};
+
+// 4. Create a Custom Article (Admin Manual Entry)
+export const createCustomArticle = async (req: Request, res: Response) => {
+  try {
+    const { title, summary, content, source_name, image_url, is_pinned } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Title and full content are required for custom articles' });
+    }
+
+    const article = await prisma.article.create({
+      data: {
+        title,
+        summary: summary || content.substring(0, 150) + '...', // Auto-generate summary if empty
+        content,
+        source_name: source_name || 'Agni Shiksha Official',
+        source_url: null, // Null safely indicates it is natively hosted inside the app!
+        image_url,
+        is_custom: true,
+        is_pinned: is_pinned || false,
+        published_at: new Date()
+      }
+    });
+
+    res.status(201).json({ message: 'Custom article created successfully', data: article });
+  } catch (error) {
+    console.error('Create Custom Article Error:', error);
+    res.status(500).json({ error: 'Failed to create custom article' });
+  }
+};
+
+// 5. Delete an Article (Remove spam or mistakes)
+export const deleteArticle = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.article.delete({ where: { id: id as string } });
+    res.status(200).json({ message: 'Article deleted successfully' });
+  } catch (error) {
+    console.error('Delete Article Error:', error);
+    res.status(500).json({ error: 'Failed to delete article' });
   }
 };

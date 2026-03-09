@@ -28,7 +28,8 @@ export const getStudentArticles = async (req: Request, res: Response) => {
           source_url: true,
           image_url: true,
           published_at: true,
-          is_pinned: true
+          is_pinned: true,
+          is_custom: true // <-- So the app can show an "Agni Shiksha Exclusive" badge!
           // We intentionally omit admin fields like 'is_hidden' and 'updated_at'
         }
       }),
@@ -47,5 +48,33 @@ export const getStudentArticles = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Get Student Articles Error:', error);
     res.status(500).json({ error: 'Failed to fetch current affairs' });
+  }
+};
+
+// NEW: Fetch full article details including the heavy Body Content
+export const getStudentArticleById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const article = await prisma.article.findUnique({
+      where: { id: id as string },
+      select: {
+        id: true,
+        title: true,
+        summary: true,
+        content: true, // <-- The heavy rich-text/Markdown payload!
+        source_name: true,
+        image_url: true,
+        published_at: true,
+        is_custom: true
+      }
+    });
+
+    if (!article) return res.status(404).json({ error: 'Article not found' });
+
+    res.status(200).json({ data: article });
+  } catch (error) {
+    console.error('Get Article Detail Error:', error);
+    res.status(500).json({ error: 'Failed to fetch article details' });
   }
 };

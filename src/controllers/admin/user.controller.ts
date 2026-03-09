@@ -84,3 +84,29 @@ export const toggleBanStudent = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update student ban status' });
   }
 };
+
+// Toggle Forum Access for a Student
+export const toggleForumBan = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await prisma.user.findUnique({ where: { id: userId as string } });
+    if (!user) return res.status(404).json({ error: 'Student not found' });
+
+    const newStatus = !user.forum_banned;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId as string },
+      data: { forum_banned: newStatus },
+      select: { id: true, forum_banned: true, email: true }
+    });
+
+    res.status(200).json({ 
+      message: `Student forum access ${newStatus ? 'revoked' : 'restored'} successfully`, 
+      user: updatedUser 
+    });
+  } catch (error) {
+    console.error('Toggle Forum Ban Error:', error);
+    res.status(500).json({ error: 'Failed to update student forum access' });
+  }
+};

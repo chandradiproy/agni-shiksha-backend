@@ -2,7 +2,13 @@
 
 import { Router } from 'express';
 import { requireAdmin } from '../../middlewares/adminAuth';
-import { triggerNewsSync, getAdminArticles, updateArticleStatus } from '../../controllers/admin/currentAffairs.controller';
+import { 
+  triggerNewsSync, 
+  getAdminArticles, 
+  updateArticleStatus,
+  createCustomArticle, // <-- Import new
+  deleteArticle        // <-- Import new
+} from '../../controllers/admin/currentAffairs.controller';
 
 const router = Router();
 
@@ -14,5 +20,11 @@ router.get('/', requireAdmin, getAdminArticles);
 
 // Hide or Pin an article
 router.put('/:id/status', requireAdmin, updateArticleStatus);
+
+// Create a manual custom article natively
+router.post('/custom', requireAdmin, createCustomArticle);
+
+// Delete an article entirely
+router.delete('/:id', requireAdmin, deleteArticle);
 
 export default router;

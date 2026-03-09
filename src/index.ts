@@ -15,6 +15,10 @@ import studentTestRoutes from './routes/student/test.routes'; // <-- Import Stud
 import adminCurrentAffairsRoutes from './routes/admin/currentAffairs.routes'; // <-- Import Current Affairs
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 import studentCurrentAffairsRoutes from './routes/student/currentAffairs.routes'; // <-- Import Student Current Affairs
+import adminStudyRoutes from './routes/admin/study.routes'; // <-- Import Admin Study
+import studentStudyRoutes from './routes/student/study.routes'; // <-- Import Student Study
+import adminModerationRoutes from './routes/admin/moderation.routes'; // <-- Import Moderation
+
 
 dotenv.config();
 
@@ -27,15 +31,19 @@ app.use(express.json()); // Parses incoming JSON requests
 app.use(morgan('dev')); // Logs API requests, methods, and status codes to the terminal
 
 // Mount Routes
-app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin/auth', adminAuthRoutes);
 app.use('/api/v1/admin/content', contentRoutes); // Mount content routes under /api/v1/admin
 app.use('/api/v1/admin/questions', adminQuestionRoutes); // <-- Mount Question routes
 app.use('/api/v1/admin/dashboard', adminDashboardRoutes); // <-- Mount Dashboard
 app.use('/api/v1/admin/users', adminUserRoutes);          // <-- Mount Users
-app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
 app.use('/api/v1/admin/current-affairs', adminCurrentAffairsRoutes); // <-- Mount Current Affairs
+app.use('/api/v1/admin/study', adminStudyRoutes);       // <-- Mount Admin Study Routes
+app.use('/api/v1/admin/moderation', adminModerationRoutes); // <-- Mount Moderation Routes
+
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
 app.use('/api/v1/student/articles', studentCurrentAffairsRoutes); // <-- Mount Student Articles
+app.use('/api/v1/student/study', studentStudyRoutes);   // <-- Mount Student Study Routes
 
 // Health Check Route
 app.get('/health', (req, res) => {

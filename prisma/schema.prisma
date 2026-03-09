@@ -13,59 +13,63 @@ datasource db {
 // ==========================================
 
 model User {
-  id                   String    @id @default(uuid()) @db.Uuid
-  phone_number         String    @unique @db.VarChar(15)
-  email                String?   @unique @db.VarChar(255)
-  password_hash        String?   @db.VarChar(255) // Optional for MVP if using only OTP/Google
-  full_name            String?   @db.VarChar(100)
-  avatar_id            Int       @default(1)
-  
-  target_exam_id       String?   @db.Uuid
-  exam_date            DateTime? @db.Date
-  study_language       String    @default("hindi") @db.VarChar(20)
-  prep_level           String    @default("beginner") @db.VarChar(20)
-  daily_study_hours    Int       @default(2) @db.SmallInt
-  
-  is_premium           Boolean   @default(false)
-  premium_plan_id      String?   @db.Uuid
-  premium_expires_at   DateTime? @db.Timestamptz
-  
-  xp_total             Int       @default(0)
-  xp_current_level     Int       @default(0)
-  level                Int       @default(1)
-  gems                 Int       @default(50)
-  current_streak       Int       @default(0)
-  longest_streak       Int       @default(0)
-  last_activity_date   DateTime? @db.Date
-  streak_freezes       Int       @default(2) @db.SmallInt
-  
-  is_email_verified    Boolean   @default(false)
-  is_phone_verified    Boolean   @default(false)
-  is_active            Boolean   @default(true)
-  is_banned            Boolean   @default(false)
-  ban_reason           String?   @db.Text
-  
-  device_tokens        Json      @default("[]")
-  device_fingerprints  Json      @default("[]")
-  referral_code        String?   @unique @db.VarChar(12)
-  referred_by_id       String?   @db.Uuid
-  
-  onboarding_completed Boolean   @default(false)
-  biometric_enabled    Boolean   @default(false)
-  
-  created_at           DateTime  @default(now()) @db.Timestamptz
-  updated_at           DateTime  @default(now()) @updatedAt @db.Timestamptz
-  deleted_at           DateTime? @db.Timestamptz
+  id            String  @id @default(uuid()) @db.Uuid
+  phone_number  String  @unique @db.VarChar(15)
+  email         String? @unique @db.VarChar(255)
+  password_hash String? @db.VarChar(255) // Optional for MVP if using only OTP/Google
+  full_name     String? @db.VarChar(100)
+  avatar_id     Int     @default(1)
+
+  target_exam_id    String?   @db.Uuid
+  exam_date         DateTime? @db.Date
+  study_language    String    @default("hindi") @db.VarChar(20)
+  prep_level        String    @default("beginner") @db.VarChar(20)
+  daily_study_hours Int       @default(2) @db.SmallInt
+
+  is_premium         Boolean   @default(false)
+  premium_plan_id    String?   @db.Uuid
+  premium_expires_at DateTime? @db.Timestamptz
+
+  xp_total           Int       @default(0)
+  xp_current_level   Int       @default(0)
+  level              Int       @default(1)
+  gems               Int       @default(50)
+  current_streak     Int       @default(0)
+  longest_streak     Int       @default(0)
+  last_activity_date DateTime? @db.Date
+  streak_freezes     Int       @default(2) @db.SmallInt
+
+  is_email_verified Boolean @default(false)
+  is_phone_verified Boolean @default(false)
+  is_active         Boolean @default(true)
+  is_banned         Boolean @default(false)
+  ban_reason        String? @db.Text
+  forum_banned  Boolean  @default(false) // <-- NEW: Block forum access only
+
+  device_tokens       Json    @default("[]")
+  device_fingerprints Json    @default("[]")
+  referral_code       String? @unique @db.VarChar(12)
+  referred_by_id      String? @db.Uuid
+
+  onboarding_completed Boolean @default(false)
+  biometric_enabled    Boolean @default(false)
+
+  created_at DateTime  @default(now()) @db.Timestamptz
+  updated_at DateTime  @default(now()) @updatedAt @db.Timestamptz
+  deleted_at DateTime? @db.Timestamptz
 
   // Relations
-  target_exam          Exam?          @relation("UserTargetExam", fields: [target_exam_id], references: [id])
-  premium_plan         Plan?          @relation("UserPremiumPlan", fields: [premium_plan_id], references: [id])
-  referred_by          User?          @relation("UserReferrals", fields: [referred_by_id], references: [id])
-  referrals            User[]         @relation("UserReferrals")
-  sessions             UserSession[]
-  test_attempts        TestAttempt[]
-  payments             Payment[]
-  subscriptions        Subscription[]
+  target_exam   Exam?          @relation("UserTargetExam", fields: [target_exam_id], references: [id])
+  premium_plan  Plan?          @relation("UserPremiumPlan", fields: [premium_plan_id], references: [id])
+  referred_by   User?          @relation("UserReferrals", fields: [referred_by_id], references: [id])
+  referrals     User[]         @relation("UserReferrals")
+  sessions      UserSession[]
+  test_attempts TestAttempt[]
+  payments      Payment[]
+  subscriptions Subscription[]
+  doubts          Doubt[]        // <-- NEW RELATION
+  doubt_answers   DoubtAnswer[]  // <-- NEW RELATION
+  reports_made    Report[]       // <-- NEW RELATION
 
   @@index([phone_number])
   @@index([xp_total(sort: Desc)])
@@ -121,9 +125,11 @@ model Exam {
   exam_pattern    Json     @default("{}")
   created_at      DateTime @default(now()) @db.Timestamptz
 
-  users           User[]       @relation("UserTargetExam")
-  test_series     TestSeries[]
-  questions       Question[]
+  users          User[]          @relation("UserTargetExam")
+  test_series    TestSeries[]
+  questions      Question[]
+  studyPlans     StudyPlan[]
+  studyMaterials StudyMaterial[]
 
   @@map("exams")
 }
@@ -140,7 +146,7 @@ model TestSeries {
   duration_minutes         Int       @db.SmallInt
   total_marks              Int       @db.SmallInt
   negative_marking         Boolean   @default(false)
-  negative_marks_per_wrong Decimal   @default(0.00) @db.Decimal(3,2)
+  negative_marks_per_wrong Decimal   @default(0.00) @db.Decimal(3, 2)
   difficulty               String    @db.VarChar(20)
   is_all_india             Boolean   @default(false)
   is_active                Boolean   @default(true)
@@ -178,7 +184,7 @@ model Question {
   question_type           String   @db.VarChar(30) // mcq/true_false/fill_blank
   question_text           String   @db.Text
   question_text_hindi     String?  @db.Text
-  options                 Json     // Array of {id, text, is_correct}
+  options                 Json // Array of {id, text, is_correct}
   correct_option_id       String   @db.VarChar(10)
   explanation             String   @db.Text
   explanation_hindi       String?  @db.Text
@@ -211,14 +217,14 @@ model TestAttempt {
   started_at         DateTime  @default(now()) @db.Timestamptz
   submitted_at       DateTime? @db.Timestamptz
   time_taken_seconds Int?
-  score              Decimal?  @db.Decimal(6,2)
-  max_score          Decimal?  @db.Decimal(6,2)
-  percentage         Decimal?  @db.Decimal(5,2)
+  score              Decimal?  @db.Decimal(6, 2)
+  max_score          Decimal?  @db.Decimal(6, 2)
+  percentage         Decimal?  @db.Decimal(5, 2)
   correct_count      Int?      @db.SmallInt
   incorrect_count    Int?      @db.SmallInt
   unattempted_count  Int?      @db.SmallInt
   all_india_rank     Int?
-  percentile         Decimal?  @db.Decimal(5,2)
+  percentile         Decimal?  @db.Decimal(5, 2)
   subject_scores     Json?
   section_scores     Json?
   topic_scores       Json?
@@ -244,14 +250,14 @@ model TestAttempt {
 // ==========================================
 
 model Plan {
-  id                   String  @id @default(uuid()) @db.Uuid
-  name                 String  @db.VarChar(100)
-  slug                 String  @unique @db.VarChar(50)
-  monthly_price_paise  Int
-  annual_price_paise   Int
-  features             Json
-  is_active            Boolean @default(true)
-  display_order        Int     @db.SmallInt
+  id                  String  @id @default(uuid()) @db.Uuid
+  name                String  @db.VarChar(100)
+  slug                String  @unique @db.VarChar(50)
+  monthly_price_paise Int
+  annual_price_paise  Int
+  features            Json
+  is_active           Boolean @default(true)
+  display_order       Int     @db.SmallInt
 
   users         User[]         @relation("UserPremiumPlan")
   subscriptions Subscription[]
@@ -261,14 +267,14 @@ model Plan {
 }
 
 model Subscription {
-  id              String    @id @default(uuid()) @db.Uuid
-  user_id         String    @db.Uuid
-  plan_id         String    @db.Uuid
-  started_at      DateTime  @db.Timestamptz
-  expires_at      DateTime  @db.Timestamptz
-  status          String    @db.VarChar(30)
-  auto_renew      Boolean   @default(false)
-  payment_gateway String    @db.VarChar(50)
+  id              String   @id @default(uuid()) @db.Uuid
+  user_id         String   @db.Uuid
+  plan_id         String   @db.Uuid
+  started_at      DateTime @db.Timestamptz
+  expires_at      DateTime @db.Timestamptz
+  status          String   @db.VarChar(30)
+  auto_renew      Boolean  @default(false)
+  payment_gateway String   @db.VarChar(50)
 
   user User @relation(fields: [user_id], references: [id])
   plan Plan @relation(fields: [plan_id], references: [id])
@@ -320,9 +326,11 @@ model Article {
   id           String   @id @default(uuid()) @db.Uuid
   title        String   @db.VarChar(500)
   summary      String   @db.Text
+  content      String?  @db.Text // <-- NEW: Full HTML/Markdown body
   source_name  String   @db.VarChar(100)
-  source_url   String   @unique @db.VarChar(1000) // Unique to prevent duplicate inserts
+  source_url   String?  @unique @db.VarChar(1000) // <-- CHANGED: Nullable for custom articles
   image_url    String?  @db.Text
+  is_custom    Boolean  @default(false) // <-- NEW: Flag to identify admin-created news
   published_at DateTime @db.Timestamptz
   is_hidden    Boolean  @default(false)
   is_pinned    Boolean  @default(false)
@@ -332,4 +340,103 @@ model Article {
   @@index([published_at(sort: Desc)])
   @@index([is_hidden])
   @@map("articles")
+}
+
+model StudyMaterial {
+  id            String   @id @default(uuid()) @db.Uuid
+  exam_id       String   @db.Uuid
+  title         String   @db.VarChar(200)
+  subject       String   @db.VarChar(100)
+  topic         String   @db.VarChar(200)
+  material_type String   @db.VarChar(20) // e.g., 'PDF', 'VIDEO_LINK'
+  file_url      String   @db.Text
+  is_active     Boolean  @default(true)
+  is_premium    Boolean  @default(false) // <-- Crucial flag for Soft Gate
+  created_at    DateTime @default(now()) @db.Timestamptz
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  exam          Exam     @relation(fields: [exam_id], references: [id])
+  tasks         StudyPlanTask[]
+
+  @@map("study_materials")
+}
+
+model StudyPlan {
+  id            String   @id @default(uuid()) @db.Uuid
+  exam_id       String   @db.Uuid
+  title         String   @db.VarChar(200)
+  duration_days Int      @db.SmallInt
+  created_at    DateTime @default(now()) @db.Timestamptz
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  exam          Exam     @relation(fields: [exam_id], references: [id])
+  tasks         StudyPlanTask[]
+
+  @@map("study_plans")
+}
+
+model StudyPlanTask {
+  id                    String   @id @default(uuid()) @db.Uuid
+  study_plan_id         String   @db.Uuid
+  day_number            Int      @db.SmallInt
+  task_title            String   @db.VarChar(200)
+  task_description      String?  @db.Text
+  reference_material_id String?  @db.Uuid
+  created_at            DateTime @default(now()) @db.Timestamptz
+  updated_at            DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  plan                  StudyPlan       @relation(fields: [study_plan_id], references: [id], onDelete: Cascade)
+  material              StudyMaterial?  @relation(fields: [reference_material_id], references: [id], onDelete: SetNull)
+
+  @@index([study_plan_id, day_number])
+  @@map("study_plan_tasks")
+}
+model Doubt {
+  id          String   @id @default(uuid()) @db.Uuid
+  user_id     String   @db.Uuid
+  title       String   @db.VarChar(300)
+  description String   @db.Text
+  subject     String?  @db.VarChar(100)
+  image_url   String?  @db.Text
+  upvotes     Int      @default(0)
+  is_resolved Boolean  @default(false)
+  is_flagged  Boolean  @default(false) // True if reported by community
+  created_at  DateTime @default(now()) @db.Timestamptz
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  user        User          @relation(fields: [user_id], references: [id])
+  answers     DoubtAnswer[]
+
+  @@map("doubts")
+}
+
+model DoubtAnswer {
+  id          String   @id @default(uuid()) @db.Uuid
+  doubt_id    String   @db.Uuid
+  user_id     String   @db.Uuid
+  content     String   @db.Text
+  upvotes     Int      @default(0)
+  is_accepted Boolean  @default(false)
+  is_flagged  Boolean  @default(false) // True if reported by community
+  created_at  DateTime @default(now()) @db.Timestamptz
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  doubt       Doubt    @relation(fields: [doubt_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id])
+
+  @@map("doubt_answers")
+}
+
+model Report {
+  id                  String   @id @default(uuid()) @db.Uuid
+  reported_by_user_id String   @db.Uuid
+  item_id             String   @db.Uuid // UUID of Doubt or DoubtAnswer
+  item_type           String   @db.VarChar(50) // 'DOUBT' or 'ANSWER'
+  reason              String   @db.Text
+  status              String   @default("PENDING") @db.VarChar(50) // 'PENDING' or 'RESOLVED'
+  created_at          DateTime @default(now()) @db.Timestamptz
+
+  reporter            User     @relation(fields: [reported_by_user_id], references: [id])
+
+  @@map("reports")
 }
