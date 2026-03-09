@@ -26,15 +26,19 @@ export const getAllStudents = async (req: Request, res: Response) => {
         skip,
         take: limit,
         orderBy: { created_at: 'desc' },
-        select: {
-          id: true,
-          full_name: true,
-          email: true,
-          phone_number: true,
-          is_active: true,
-          is_banned: true,
-          created_at: true,
-          target_exam: { select: { name: true } }
+        // REPLACE 'select' with 'include' to fetch ALL base fields + relations
+        include: {
+          target_exam: { 
+            select: { id: true, name: true, category: true } 
+          },
+          _count: {
+            select: {
+              test_attempts: true,
+              doubts: true,
+              doubt_answers: true,
+              reports_made: true
+            }
+          }
         }
       }),
       prisma.user.count({ where: whereClause })
@@ -61,7 +65,7 @@ export const toggleBanStudent = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { ban_reason } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { id: id as string } });
+    const user = await prisma.user.findUnique({ where: { id : id as string} });
     if (!user) return res.status(404).json({ error: 'Student not found' });
 
     const newBanStatus = !user.is_banned;
@@ -90,7 +94,7 @@ export const toggleForumBan = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    const user = await prisma.user.findUnique({ where: { id: userId as string } });
+    const user = await prisma.user.findUnique({ where: { id: userId  as string } });
     if (!user) return res.status(404).json({ error: 'Student not found' });
 
     const newStatus = !user.forum_banned;
