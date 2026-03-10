@@ -26,7 +26,7 @@ export const createStudyMaterial = async (req: Request, res: Response) => {
         file_url,
         is_active: is_active ?? true,
         is_premium: is_premium ?? false, // Controls the Soft Gate
-        created_by: adminId // <-- NEW
+        created_by: adminId 
       }
     });
 
@@ -65,6 +65,67 @@ export const getStudyMaterials = async (req: Request, res: Response) => {
   }
 };
 
+export const updateStudyMaterial = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingMaterial = await prisma.studyMaterial.findUnique({ where: { id: id as string } });
+    if (!existingMaterial) return res.status(404).json({ error: 'Study Material not found' });
+
+    const updatedMaterial = await prisma.studyMaterial.update({
+      where: { id: id as string },
+      data: {
+        ...updateData,
+        updated_by: adminId
+      }
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'UPDATED_STUDY_MATERIAL',
+        target_id: id as string,
+        details: { fields_updated: Object.keys(updateData) }
+      }
+    });
+
+    res.status(200).json({ message: 'Study material updated successfully', data: updatedMaterial });
+  } catch (error) {
+    console.error('Update Study Material Error:', error);
+    res.status(500).json({ error: 'Failed to update study material' });
+  }
+};
+
+export const deleteStudyMaterial = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingMaterial = await prisma.studyMaterial.findUnique({ where: { id: id as string } });
+    if (!existingMaterial) return res.status(404).json({ error: 'Study Material not found' });
+
+    await prisma.studyMaterial.delete({
+      where: { id: id as string }
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_STUDY_MATERIAL',
+        target_id: id as string,
+        details: { title: existingMaterial.title }
+      }
+    });
+
+    res.status(200).json({ message: 'Study material deleted successfully' });
+  } catch (error) {
+    console.error('Delete Study Material Error:', error);
+    res.status(500).json({ error: 'Failed to delete study material' });
+  }
+};
+
 // ==========================================
 // STUDY PLANS (Day-by-Day Syllabus)
 // ==========================================
@@ -83,7 +144,7 @@ export const createStudyPlan = async (req: Request, res: Response) => {
         exam_id, 
         title, 
         duration_days: Number(duration_days),
-        created_by: adminId // <-- NEW
+        created_by: adminId 
       }
     });
 
@@ -110,7 +171,8 @@ export const getStudyPlans = async (req: Request, res: Response) => {
       orderBy: { created_at: 'desc' },
       include: { 
         exam: { select: { name: true } },
-        _count: { select: { tasks: true } }
+        _count: { select: { tasks: true } },
+        tasks: { include: { material: true }}
       }
     });
 
@@ -118,6 +180,70 @@ export const getStudyPlans = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Fetch Study Plans Error:', error);
     res.status(500).json({ error: 'Failed to fetch study plans' });
+  }
+};
+
+export const updateStudyPlan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingPlan = await prisma.studyPlan.findUnique({ where: { id: id as string } });
+    if (!existingPlan) return res.status(404).json({ error: 'Study Plan not found' });
+
+    if (updateData.duration_days) {
+      updateData.duration_days = Number(updateData.duration_days);
+    }
+
+    const updatedPlan = await prisma.studyPlan.update({
+      where: { id: id as string },
+      data: {
+        ...updateData,
+        updated_by: adminId
+      }
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'UPDATED_STUDY_PLAN',
+        target_id: id as string
+      }
+    });
+
+    res.status(200).json({ message: 'Study plan updated successfully', data: updatedPlan });
+  } catch (error) {
+    console.error('Update Study Plan Error:', error);
+    res.status(500).json({ error: 'Failed to update study plan' });
+  }
+};
+
+export const deleteStudyPlan = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingPlan = await prisma.studyPlan.findUnique({ where: { id: id as string } });
+    if (!existingPlan) return res.status(404).json({ error: 'Study Plan not found' });
+
+    await prisma.studyPlan.delete({
+      where: { id: id as string }
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_STUDY_PLAN',
+        target_id: id as string,
+        details: { title: existingPlan.title }
+      }
+    });
+
+    res.status(200).json({ message: 'Study plan deleted successfully' });
+  } catch (error) {
+    console.error('Delete Study Plan Error:', error);
+    res.status(500).json({ error: 'Failed to delete study plan' });
   }
 };
 
@@ -154,7 +280,7 @@ export const addStudyPlanTask = async (req: Request, res: Response) => {
         admin_id: adminId,
         action: 'ADDED_STUDY_PLAN_TASK',
         target_id: task.id,
-        details: { task_title }
+        details: { task_title, plan_id: planId }
       }
     });
 
@@ -162,5 +288,72 @@ export const addStudyPlanTask = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Add Study Plan Task Error:', error);
     res.status(500).json({ error: 'Failed to add task to study plan' });
+  }
+};
+
+export const updateStudyPlanTask = async (req: Request, res: Response) => {
+  try {
+    const { taskId } = req.params;
+    const updateData = req.body;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingTask = await prisma.studyPlanTask.findUnique({ where: { id: taskId as string } });
+    if (!existingTask) return res.status(404).json({ error: 'Study plan task not found' });
+
+    if (updateData.day_number) {
+      updateData.day_number = Number(updateData.day_number);
+      // Validate against parent plan's duration limits
+      const plan = await prisma.studyPlan.findUnique({ where: { id: existingTask.study_plan_id } });
+      if (plan && (updateData.day_number > plan.duration_days || updateData.day_number < 1)) {
+        return res.status(400).json({ error: `Day number must be between 1 and ${plan.duration_days}` });
+      }
+    }
+
+    const updatedTask = await prisma.studyPlanTask.update({
+      where: { id: taskId as string },
+      data: updateData
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'UPDATED_STUDY_PLAN_TASK',
+        target_id: taskId as string,
+        details: { plan_id: existingTask.study_plan_id }
+      }
+    });
+
+    res.status(200).json({ message: 'Task updated successfully', data: updatedTask });
+  } catch (error) {
+    console.error('Update Study Plan Task Error:', error);
+    res.status(500).json({ error: 'Failed to update study plan task' });
+  }
+};
+
+export const deleteStudyPlanTask = async (req: Request, res: Response) => {
+  try {
+    const { taskId } = req.params;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingTask = await prisma.studyPlanTask.findUnique({ where: { id: taskId as string } });
+    if (!existingTask) return res.status(404).json({ error: 'Study plan task not found' });
+
+    await prisma.studyPlanTask.delete({
+      where: { id: taskId as string }
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_STUDY_PLAN_TASK',
+        target_id: taskId as string,
+        details: { plan_id: existingTask.study_plan_id }
+      }
+    });
+
+    res.status(200).json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error('Delete Study Plan Task Error:', error);
+    res.status(500).json({ error: 'Failed to delete study plan task' });
   }
 };

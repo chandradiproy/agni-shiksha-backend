@@ -2,6 +2,8 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
+import { id } from 'zod/v4/locales';
+import { equal } from 'node:assert';
 
 // Get all students (with optional search and pagination)
 export const getAllStudents = async (req: Request, res: Response) => {
@@ -14,9 +16,10 @@ export const getAllStudents = async (req: Request, res: Response) => {
     // Build the search query
     const whereClause = search ? {
       OR: [
+        {id: {equals: search} },  
         { full_name: { contains: search, mode: 'insensitive' as const } },
         { email: { contains: search, mode: 'insensitive' as const } },
-        { phone_number: { contains: search } }
+        { phone_number: { contains: search } }, 
       ]
     } : {};
 
