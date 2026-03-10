@@ -64,6 +64,7 @@ export const toggleBanStudent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { ban_reason } = req.body;
+    const adminId = (req as any).admin?.id as string;
 
     const user = await prisma.user.findUnique({ where: { id : id as string} });
     if (!user) return res.status(404).json({ error: 'Student not found' });
@@ -77,6 +78,16 @@ export const toggleBanStudent = async (req: Request, res: Response) => {
         ban_reason: newBanStatus ? ban_reason : null, // Clear reason if unbanning
       },
       select: { id: true, is_banned: true, ban_reason: true, email: true }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: newBanStatus ? 'BANNED_USER' : 'UNBANNED_USER',
+        target_id: id as string,
+        details: { reason: newBanStatus ? ban_reason : null }
+      }
     });
 
     res.status(200).json({ 
@@ -93,6 +104,7 @@ export const toggleBanStudent = async (req: Request, res: Response) => {
 export const toggleForumBan = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
+    const adminId = (req as any).admin?.id as string;
 
     const user = await prisma.user.findUnique({ where: { id: userId  as string } });
     if (!user) return res.status(404).json({ error: 'Student not found' });
@@ -103,6 +115,15 @@ export const toggleForumBan = async (req: Request, res: Response) => {
       where: { id: userId as string },
       data: { forum_banned: newStatus },
       select: { id: true, forum_banned: true, email: true }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: newStatus ? 'FORUM_BANNED_USER' : 'FORUM_UNBANNED_USER',
+        target_id: userId as string
+      }
     });
 
     res.status(200).json({ 

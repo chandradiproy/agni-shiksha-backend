@@ -181,6 +181,16 @@ export const commitBulkQuestions = async (req: Request, res: Response) => {
 
     if (validQuestions.length > 0) {
       await prisma.question.createMany({ data: validQuestions });
+      
+      // Audit Log
+      await prisma.adminAuditLog.create({
+        data: {
+          admin_id: adminId,
+          action: 'BULK_CREATED_QUESTIONS',
+          target_id: testSeriesId as string,
+          details: { count: validQuestions.length }
+        }
+      });
     }
 
     res.status(200).json({
@@ -220,6 +230,7 @@ export const getTestSeriesQuestions = async (req: Request, res: Response) => {
 export const updateQuestion = async (req: Request, res: Response) => {
   try {
     const { testSeriesId, questionId } = req.params;
+    const adminId = (req as any).admin?.id as string;
 
     // 1. Security Check: Is the Test Series locked?
     const testSeries = await prisma.testSeries.findUnique({ where: { id: testSeriesId as string } });
@@ -274,6 +285,15 @@ export const updateQuestion = async (req: Request, res: Response) => {
       }
     });
 
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'UPDATED_QUESTION',
+        target_id: updatedQuestion.id
+      }
+    });
+
     res.status(200).json({ message: 'Question updated successfully', question: updatedQuestion });
   } catch (error) {
     console.error('Update Question Error:', error);
@@ -285,6 +305,7 @@ export const updateQuestion = async (req: Request, res: Response) => {
 export const deleteQuestion = async (req: Request, res: Response) => {
   try {
     const { testSeriesId, questionId } = req.params;
+    const adminId = (req as any).admin?.id as string;
 
     // 1. Security Check: Is the Test Series locked?
     const testSeries = await prisma.testSeries.findUnique({ where: { id: testSeriesId as string } });
@@ -297,6 +318,15 @@ export const deleteQuestion = async (req: Request, res: Response) => {
     // 2. Delete the Question
     await prisma.question.delete({
       where: { id: questionId as string }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_QUESTION',
+        target_id: questionId as string
+      }
     });
 
     res.status(200).json({ message: 'Question deleted successfully' });

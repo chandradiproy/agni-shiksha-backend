@@ -10,6 +10,7 @@ import prisma from '../../config/db';
 export const createQuest = async (req: Request, res: Response) => {
   try {
     const { title, description, xp_reward, target_action, target_count, is_active } = req.body;
+    const adminId = (req as any).admin?.id as string;
 
     if (!title || !description || !xp_reward || !target_action || !target_count) {
       return res.status(400).json({ error: 'All core quest fields are required' });
@@ -23,6 +24,16 @@ export const createQuest = async (req: Request, res: Response) => {
         target_action,
         target_count: Number(target_count),
         is_active: is_active ?? true
+      }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'CREATED_QUEST',
+        target_id: quest.id,
+        details: { title }
       }
     });
 
@@ -53,6 +64,7 @@ export const getQuests = async (req: Request, res: Response) => {
 export const createBadge = async (req: Request, res: Response) => {
   try {
     const { badge_name, description, icon_url, unlock_xp_threshold } = req.body;
+    const adminId = (req as any).admin?.id as string;
 
     if (!badge_name || !description || !icon_url || unlock_xp_threshold === undefined) {
       return res.status(400).json({ error: 'All badge fields are required' });
@@ -64,6 +76,16 @@ export const createBadge = async (req: Request, res: Response) => {
         description,
         icon_url,
         unlock_xp_threshold: Number(unlock_xp_threshold)
+      }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'CREATED_BADGE',
+        target_id: badge.id,
+        details: { badge_name }
       }
     });
 

@@ -14,6 +14,8 @@ export const createTestSeries = async (req: Request, res: Response) => {
       available_from, available_until, max_attempts, show_solutions,
       show_solutions_after, instructions, sections, price_if_standalone
     } = req.body;
+    
+    const adminId = (req as any).admin?.id as string;
 
     // Strict validation for core required fields based on Schema
     if (!exam_id || !title || !type || !test_type || total_questions === undefined || duration_minutes === undefined || total_marks === undefined || !difficulty) {
@@ -55,7 +57,18 @@ export const createTestSeries = async (req: Request, res: Response) => {
         show_solutions_after: show_solutions_after || 'immediate',
         instructions,
         sections: sections || [], // Handled as JSON
-        price_if_standalone: price_if_standalone ? Number(price_if_standalone) : null
+        price_if_standalone: price_if_standalone ? Number(price_if_standalone) : null,
+        created_by: adminId // <-- NEW
+      }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'CREATED_TEST_SERIES',
+        target_id: newTestSeries.id,
+        details: { title }
       }
     });
 
@@ -84,7 +97,8 @@ export const getTestSeriesByExam = async (req: Request, res: Response) => {
 export const updateTestSeries = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = { ...req.body };
+    const adminId = (req as any).admin?.id as string;
+    const updateData = { ...req.body, updated_by: adminId }; // <-- NEW
 
     // 1. Fetch existing test to check publication status
     const existingTest = await prisma.testSeries.findUnique({ where: { id: id as string } });
@@ -123,6 +137,15 @@ export const updateTestSeries = async (req: Request, res: Response) => {
       data: updateData
     });
 
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'UPDATED_TEST_SERIES',
+        target_id: updatedTestSeries.id
+      }
+    });
+
     res.status(200).json({ message: 'Test Series updated successfully', testSeries: updatedTestSeries });
   } catch (error) {
     console.error('Update Test Series Error:', error);
@@ -134,6 +157,7 @@ export const updateTestSeries = async (req: Request, res: Response) => {
 export const deleteTestSeries = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const adminId = (req as any).admin?.id as string;
 
     const existingTest = await prisma.testSeries.findUnique({ where: { id: id as string } });
     if (!existingTest) return res.status(404).json({ error: 'Test Series not found' });
@@ -147,6 +171,15 @@ export const deleteTestSeries = async (req: Request, res: Response) => {
 
     await prisma.testSeries.delete({
       where: { id: id as string }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_TEST_SERIES',
+        target_id: id as string
+      }
     });
 
     res.status(200).json({ message: 'Test Series deleted successfully' });

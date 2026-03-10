@@ -41,6 +41,7 @@ export const getModerationDoubts = async (req: Request, res: Response) => {
 export const deleteDoubt = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const adminId = (req as any).admin?.id as string;
     
     // Check if it exists
     const existingDoubt = await prisma.doubt.findUnique({ where: { id: id as string } });
@@ -48,6 +49,16 @@ export const deleteDoubt = async (req: Request, res: Response) => {
 
     await prisma.doubt.delete({ where: { id : id as string } });
     
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_DOUBT',
+        target_id: id as string,
+        details: { doubt_title: existingDoubt.title }
+      }
+    });
+
     res.status(200).json({ message: 'Doubt and its associated answers deleted successfully' });
   } catch (error) {
     console.error('Delete Doubt Error:', error);
@@ -59,12 +70,23 @@ export const deleteDoubt = async (req: Request, res: Response) => {
 export const deleteDoubtAnswer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const adminId = (req as any).admin?.id as string;
 
     const existingAnswer = await prisma.doubtAnswer.findUnique({ where: { id : id as string} });
     if (!existingAnswer) return res.status(404).json({ error: 'Answer not found' });
 
     await prisma.doubtAnswer.delete({ where: { id : id as string} });
     
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'DELETED_DOUBT_ANSWER',
+        target_id: id as string,
+        details: { doubt_id: existingAnswer.doubt_id }
+      }
+    });
+
     res.status(200).json({ message: 'Answer deleted successfully' });
   } catch (error) {
     console.error('Delete Answer Error:', error);

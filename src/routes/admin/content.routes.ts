@@ -2,7 +2,7 @@
 
 import { Router } from 'express';
 import { requireAdmin } from '../../middlewares/adminAuth';
-import { createExam, getAllExams, updateExam } from '../../controllers/admin/exam.controller';
+import { createExam, getAllExams, updateExam, deleteExam } from '../../controllers/admin/exam.controller';
 import { 
   createTestSeries, 
   getTestSeriesByExam, 
@@ -18,6 +18,7 @@ const router = Router();
 router.post('/exams', requireAdmin, createExam);
 router.get('/exams', requireAdmin, getAllExams);
 router.put('/exams/:id', requireAdmin, updateExam);
+router.delete('/exams/:id', requireAdmin, deleteExam);
 
 // ==========================================
 // TEST SERIES ROUTES

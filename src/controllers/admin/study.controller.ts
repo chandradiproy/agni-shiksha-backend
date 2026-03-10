@@ -10,6 +10,7 @@ import prisma from '../../config/db';
 export const createStudyMaterial = async (req: Request, res: Response) => {
   try {
     const { exam_id, title, subject, topic, material_type, file_url, is_active, is_premium } = req.body;
+    const adminId = (req as any).admin?.id as string;
 
     if (!exam_id || !title || !subject || !topic || !material_type || !file_url) {
       return res.status(400).json({ error: 'All core material fields are required' });
@@ -24,7 +25,18 @@ export const createStudyMaterial = async (req: Request, res: Response) => {
         material_type,
         file_url,
         is_active: is_active ?? true,
-        is_premium: is_premium ?? false // Controls the Soft Gate
+        is_premium: is_premium ?? false, // Controls the Soft Gate
+        created_by: adminId // <-- NEW
+      }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'CREATED_STUDY_MATERIAL',
+        target_id: material.id,
+        details: { title }
       }
     });
 
@@ -48,6 +60,7 @@ export const getStudyMaterials = async (req: Request, res: Response) => {
 
     res.status(200).json({ data: materials });
   } catch (error) {
+    console.error('Fetch Study Materials Error:', error);
     res.status(500).json({ error: 'Failed to fetch materials' });
   }
 };
@@ -59,17 +72,34 @@ export const getStudyMaterials = async (req: Request, res: Response) => {
 export const createStudyPlan = async (req: Request, res: Response) => {
   try {
     const { exam_id, title, duration_days } = req.body;
+    const adminId = (req as any).admin?.id as string;
 
     if (!exam_id || !title || !duration_days) {
       return res.status(400).json({ error: 'Exam ID, title, and duration are required' });
     }
 
     const plan = await prisma.studyPlan.create({
-      data: { exam_id, title, duration_days: Number(duration_days) }
+      data: { 
+        exam_id, 
+        title, 
+        duration_days: Number(duration_days),
+        created_by: adminId // <-- NEW
+      }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'CREATED_STUDY_PLAN',
+        target_id: plan.id,
+        details: { title }
+      }
     });
 
     res.status(201).json({ message: 'Study plan created successfully', data: plan });
   } catch (error) {
+    console.error('Create Study Plan Error:', error);
     res.status(500).json({ error: 'Failed to create study plan' });
   }
 };
@@ -86,6 +116,7 @@ export const getStudyPlans = async (req: Request, res: Response) => {
 
     res.status(200).json({ data: plans });
   } catch (error) {
+    console.error('Fetch Study Plans Error:', error);
     res.status(500).json({ error: 'Failed to fetch study plans' });
   }
 };
@@ -94,6 +125,7 @@ export const addStudyPlanTask = async (req: Request, res: Response) => {
   try {
     const { planId } = req.params;
     const { day_number, task_title, task_description, reference_material_id } = req.body;
+    const adminId = (req as any).admin?.id as string;
 
     if (!day_number || !task_title) {
       return res.status(400).json({ error: 'Day number and task title are required' });
@@ -116,8 +148,19 @@ export const addStudyPlanTask = async (req: Request, res: Response) => {
       }
     });
 
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'ADDED_STUDY_PLAN_TASK',
+        target_id: task.id,
+        details: { task_title }
+      }
+    });
+
     res.status(201).json({ message: 'Task added to plan successfully', data: task });
   } catch (error) {
+    console.error('Add Study Plan Task Error:', error);
     res.status(500).json({ error: 'Failed to add task to study plan' });
   }
 };

@@ -123,13 +123,17 @@ model Exam {
   display_order   Int      @db.SmallInt
   subjects        Json     @default("[]")
   exam_pattern    Json     @default("{}")
+  created_by      String?  @db.Uuid
+  updated_by      String?  @db.Uuid
   created_at      DateTime @default(now()) @db.Timestamptz
 
   users          User[]          @relation("UserTargetExam")
   test_series    TestSeries[]
   questions      Question[]
-  studyPlans     StudyPlan[]
-  studyMaterials StudyMaterial[]
+  study_plans     StudyPlan[]
+  study_materials StudyMaterial[]
+  creator         AdminUser?      @relation("ExamCreator", fields: [created_by], references: [id])
+  updater         AdminUser?      @relation("ExamUpdater", fields: [updated_by], references: [id])
 
   @@map("exams")
 }
@@ -161,12 +165,16 @@ model TestSeries {
   instructions             String?   @db.Text
   sections                 Json      @default("[]")
   price_if_standalone      Int?
+  created_by               String?   @db.Uuid
+  updated_by               String?   @db.Uuid
   created_at               DateTime  @default(now()) @db.Timestamptz
   updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz
 
   exam      Exam          @relation(fields: [exam_id], references: [id])
   questions Question[]
   attempts  TestAttempt[]
+  creator   AdminUser?    @relation("TestCreator", fields: [created_by], references: [id])
+  updater   AdminUser?    @relation("TestUpdater", fields: [updated_by], references: [id])
 
   @@index([exam_id, is_active])
   @@index([type, is_active])
@@ -316,10 +324,47 @@ model AdminUser {
   password_hash String    @db.VarChar(255)
   is_active     Boolean   @default(true)
   last_login    DateTime? @db.Timestamptz
+  created_at    DateTime   @default(now()) @db.Timestamptz
+  updated_at    DateTime   @default(now()) @updatedAt @db.Timestamptz
 
   created_questions Question[]
 
+    // Relations mapping to content creation/updates
+  //questions         Question[]
+  
+  created_exams     Exam[]          @relation("ExamCreator")
+  updated_exams     Exam[]          @relation("ExamUpdater")
+  
+  created_tests     TestSeries[]    @relation("TestCreator")
+  updated_tests     TestSeries[]    @relation("TestUpdater")
+  
+  created_materials StudyMaterial[] @relation("MaterialCreator")
+  updated_materials StudyMaterial[] @relation("MaterialUpdater")
+  
+  created_plans     StudyPlan[]     @relation("PlanCreator")
+  updated_plans     StudyPlan[]     @relation("PlanUpdater")
+  
+  created_articles  Article[]       @relation("ArticleCreator")
+  updated_articles  Article[]       @relation("ArticleUpdater")
+  
+  audit_logs        AdminAuditLog[]
+
   @@map("admin_users")
+}
+
+model AdminAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  admin_id    String   @db.Uuid
+  action      String   @db.VarChar(100) // e.g., "BANNED_USER", "DELETED_TEST"
+  target_id   String   @db.Uuid         // The ID of the item affected
+  details     Json?                     // Additional metadata
+  created_at  DateTime @default(now()) @db.Timestamptz
+
+  admin       AdminUser @relation(fields: [admin_id], references: [id])
+
+  @@index([admin_id])
+  @@index([action])
+  @@map("admin_audit_logs")
 }
 
 model Article {
@@ -334,8 +379,14 @@ model Article {
   published_at DateTime @db.Timestamptz
   is_hidden    Boolean  @default(false)
   is_pinned    Boolean  @default(false)
+  created_by   String?  @db.Uuid
+  updated_by   String?  @db.Uuid
   created_at   DateTime @default(now()) @db.Timestamptz
   updated_at   DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  creator      AdminUser? @relation("ArticleCreator", fields: [created_by], references: [id])
+  updater      AdminUser? @relation("ArticleUpdater", fields: [updated_by], references: [id])
+
 
   @@index([published_at(sort: Desc)])
   @@index([is_hidden])
@@ -348,15 +399,20 @@ model StudyMaterial {
   title         String   @db.VarChar(200)
   subject       String   @db.VarChar(100)
   topic         String   @db.VarChar(200)
-  material_type String   @db.VarChar(20) // e.g., 'PDF', 'VIDEO_LINK'
+  material_type String   @db.VarChar(20) // e.g., 'PDF', 'VIDEO_  LINK'
   file_url      String   @db.Text
   is_active     Boolean  @default(true)
   is_premium    Boolean  @default(false) // <-- Crucial flag for Soft Gate
+  created_by    String?  @db.Uuid
+  updated_by    String?  @db.Uuid
   created_at    DateTime @default(now()) @db.Timestamptz
   updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
 
   exam          Exam     @relation(fields: [exam_id], references: [id])
   tasks         StudyPlanTask[]
+  creator       AdminUser?      @relation("MaterialCreator", fields: [created_by], references: [id])
+  updater       AdminUser?      @relation("MaterialUpdater", fields: [updated_by], references: [id])
+
 
   @@map("study_materials")
 }
@@ -366,11 +422,15 @@ model StudyPlan {
   exam_id       String   @db.Uuid
   title         String   @db.VarChar(200)
   duration_days Int      @db.SmallInt
+  created_by    String?  @db.Uuid
+  updated_by    String?  @db.Uuid
   created_at    DateTime @default(now()) @db.Timestamptz
   updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
 
   exam          Exam     @relation(fields: [exam_id], references: [id])
   tasks         StudyPlanTask[]
+  creator       AdminUser?      @relation("PlanCreator", fields: [created_by], references: [id])
+  updater       AdminUser?      @relation("PlanUpdater", fields: [updated_by], references: [id])
 
   @@map("study_plans")
 }
