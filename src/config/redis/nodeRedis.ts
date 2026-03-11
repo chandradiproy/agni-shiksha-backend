@@ -5,16 +5,22 @@ import { createClient } from 'redis';
 export const createNodeRedisClient = async () => {
   console.log('[Redis][Node] Creating client...');
 
+  const isLocal = process.env.REDIS_URL?.includes('localhost');
+
   const client = createClient({
     url: process.env.REDIS_URL,
-    pingInterval: 10000, // CRITICAL: Keeps the Upstash socket alive
+    pingInterval: 10000,
+
     socket: {
-      tls: true,
+      ...(isLocal
+        ? {}
+        : { tls: true }), // enable TLS only for remote redis
+
       reconnectStrategy: (retries) => {
         console.warn(`[Redis][Node] Reconnecting... Attempt: ${retries}`);
         if (retries > 20) return new Error('Max Redis reconnect retries reached');
-        return Math.min(retries * 50, 2000); // Exponential backoff
-      }
+        return Math.min(retries * 50, 2000);
+      },
     },
   });
 
