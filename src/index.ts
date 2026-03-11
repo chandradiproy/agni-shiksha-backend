@@ -20,7 +20,8 @@ import studentTestRoutes from './routes/student/test.routes'; // <-- Import Stud
 import studentStudyRoutes from './routes/student/study.routes'; // <-- Import Student Study
 import studentCurrentAffairsRoutes from './routes/student/currentAffairs.routes'; // <-- Import Student Current Affairs
 import studentDashboardRoutes from './routes/student/dashboard.routes'; // <-- Import Student Dashboard Routes
-
+import analysisRoutes from './routes/student/analysis.routes';
+import gamificationRoutes from './routes/student/gamification.routes';
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 
@@ -50,6 +51,8 @@ app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
 app.use('/api/v1/student/articles', studentCurrentAffairsRoutes); // <-- Mount Student Articles
 app.use('/api/v1/student/study', studentStudyRoutes);   // <-- Mount Student Study Routes
 app.use('/api/v1/student/dashboard', studentDashboardRoutes); // <-- Mount Student Dashboard Routes
+app.use('/api/v1/student/analysis', analysisRoutes);
+app.use('/api/v1/student/gamification', gamificationRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {
