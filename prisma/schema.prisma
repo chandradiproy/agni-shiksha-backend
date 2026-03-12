@@ -70,6 +70,7 @@ model User {
   doubts          Doubt[]        // <-- NEW RELATION
   doubt_answers   DoubtAnswer[]  // <-- NEW RELATION
   reports_made    Report[]       // <-- NEW RELATION
+  transactions  PaymentTransaction[] // New relation
 
   @@index([phone_number])
   @@index([xp_total(sort: Desc)])
@@ -475,6 +476,7 @@ model DoubtAnswer {
   doubt_id    String   @db.Uuid
   user_id     String   @db.Uuid
   content     String   @db.Text
+  image_url   String?  @db.VarChar(255) // ADDED: Allows students to upload solution images
   upvotes     Int      @default(0)
   is_accepted Boolean  @default(false)
   is_flagged  Boolean  @default(false) // True if reported by community
@@ -529,4 +531,22 @@ model BadgeConfig {
   updated_at           DateTime @default(now()) @updatedAt @db.Timestamptz
 
   @@map("badge_configs")
+}
+
+model PaymentTransaction {
+  id               String   @id @default(uuid()) @db.Uuid
+  user_id          String   @db.Uuid
+  razorpay_order_id String   @unique @db.VarChar(255)
+  razorpay_payment_id String?  @unique @db.VarChar(255)
+  amount           Decimal    @db.Decimal(10, 2)
+  currency         String   @default("INR") @db.VarChar(10)
+  status           String   @default("CREATED") @db.VarChar(50) // 'CREATED', 'SUCCESS', 'FAILED'
+  plan_id          String   @db.Uuid // UUID of the selected premium plan
+  error_message    String?  @db.Text
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("payment_transactions")
 }

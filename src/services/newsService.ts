@@ -48,6 +48,7 @@ export const fetchAndStoreNews = async () => {
             source_name: article.source.name,
             source_url: article.url,
             image_url: article.image,
+            content: article.content||null,
             published_at: new Date(article.publishedAt)
           }
         });

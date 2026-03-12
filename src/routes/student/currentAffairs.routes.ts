@@ -2,16 +2,19 @@
 
 import { Router } from 'express';
 import { requireAuth } from '../../middlewares/auth';
-import { getStudentArticles, getStudentArticleById } from '../../controllers/student/currentAffairs.controller';
+import { getArticles, getArticleDetails } from '../../controllers/student/currentAffairs.controller';
 
 const router = Router();
 
-// Fetch the feed of visible articles (Summaries only for speed)
-// Endpoint: GET /api/v1/student/articles
-router.get('/', requireAuth, getStudentArticles);
+// Protect routes (or leave public if you want guest access to news)
+router.use(requireAuth);
 
-// Fetch full article body content (Called when opening ArticleDetailScreen)
-// Endpoint: GET /api/v1/student/articles/:id
-router.get('/:id', requireAuth, getStudentArticleById);
+// GET /api/v1/student/articles
+// Fetches the lightweight paginated news feed
+router.get('/', getArticles);
+
+// GET /api/v1/student/articles/:id
+// Fetches the full HTML/Markdown body of a specific article
+router.get('/:id', getArticleDetails);
 
 export default router;

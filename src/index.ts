@@ -14,16 +14,22 @@ import adminCurrentAffairsRoutes from './routes/admin/currentAffairs.routes'; //
 import adminModerationRoutes from './routes/admin/moderation.routes'; // <-- Import Moderation
 import adminStudyRoutes from './routes/admin/study.routes'; // <-- Import Admin Study
 import adminGamificationRoutes from './routes/admin/gamification.routes'; // <-- Import Gamification Routes
+import adminAuditRoutes from './routes/admin/audit.routes'; // <-- Import Audit
+import adminPlanRoutes from './routes/admin/plan.routes'; // <-- Import Plan Management Routes
+import adminFinancialRoutes from './routes/admin/financial.routes';
 
 import adminAuthRoutes from './routes/adminAuth.routes';
 import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
-import studentStudyRoutes from './routes/student/study.routes'; // <-- Import Student Study
-import studentCurrentAffairsRoutes from './routes/student/currentAffairs.routes'; // <-- Import Student Current Affairs
 import studentDashboardRoutes from './routes/student/dashboard.routes'; // <-- Import Student Dashboard Routes
 import analysisRoutes from './routes/student/analysis.routes';
 import gamificationRoutes from './routes/student/gamification.routes';
+import studyRoutes from './routes/student/study.routes';
+import currentAffairsRoutes from './routes/student/currentAffairs.routes';
+import socialRoutes from './routes/student/social.routes';
+import premiumRoutes from './routes/student/premium.routes';
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
+import { schedulePremiumExpirer } from './corn/premiumExperier'; // <-- Import Premium Expirer Cron Job
 
 dotenv.config();
 
@@ -45,14 +51,19 @@ app.use('/api/v1/admin/current-affairs', adminCurrentAffairsRoutes); // <-- Moun
 app.use('/api/v1/admin/study', adminStudyRoutes);       // <-- Mount Admin Study Routes
 app.use('/api/v1/admin/moderation', adminModerationRoutes); // <-- Mount Moderation Routes
 app.use('/api/v1/admin/gamification', adminGamificationRoutes); // <-- Mount Gamification Routes
+app.use('/api/v1/admin/audit', adminAuditRoutes);
+app.use('/api/v1/admin/plans', adminPlanRoutes); // <-- Mount Plan Management Routes
+app.use('/api/v1/admin/financial', adminFinancialRoutes); // <-- Mount Financial Routes
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
-app.use('/api/v1/student/articles', studentCurrentAffairsRoutes); // <-- Mount Student Articles
-app.use('/api/v1/student/study', studentStudyRoutes);   // <-- Mount Student Study Routes
 app.use('/api/v1/student/dashboard', studentDashboardRoutes); // <-- Mount Student Dashboard Routes
 app.use('/api/v1/student/analysis', analysisRoutes);
 app.use('/api/v1/student/gamification', gamificationRoutes);
+app.use('/api/v1/student/study', studyRoutes);
+app.use('/api/v1/student/articles', currentAffairsRoutes);
+app.use('/api/v1/student/social', socialRoutes);
+app.use('/api/v1/student/premium', premiumRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {
@@ -60,6 +71,7 @@ app.get('/health', (req, res) => {
 });
 
 initCronJobs(); // Start the background jobs for news aggregation
+schedulePremiumExpirer(); // Start the cron job to expire premium subscriptions
 
 // Initialize Server
 const startServer = async () => {

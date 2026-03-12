@@ -2,16 +2,19 @@
 
 import { Router } from 'express';
 import { requireAuth } from '../../middlewares/auth';
-import { getStudentStudyMaterials, getStudentStudyPlans } from '../../controllers/student/study.controller';
+import { getStudyPlans, getStudyMaterials } from '../../controllers/student/study.controller';
 
 const router = Router();
 
-// Fetch Study Materials (PDFs/Videos) with Soft Gate security
-// Example: GET /api/v1/student/study/materials?examId=123&subject=Maths
-router.get('/materials', requireAuth, getStudentStudyMaterials);
+// Protect routes
+router.use(requireAuth);
 
-// Fetch Day-by-Day syllabus tracking
-// Example: GET /api/v1/student/study/plans?examId=123
-router.get('/plans', requireAuth, getStudentStudyPlans);
+// GET /api/v1/student/study/plans
+// Fetch day-by-day study plans (Tasks are included)
+router.get('/plans', getStudyPlans);
+
+// GET /api/v1/student/study/materials
+// Fetch PDFs and Video links (Includes dynamic premium paywall locking)
+router.get('/materials', getStudyMaterials);
 
 export default router;

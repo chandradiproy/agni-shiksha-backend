@@ -10,7 +10,7 @@ const router = Router();
 router.use(requireAdmin);
 
 // Secure all routes with the admin authentication middleware
-router.use(requireRole(['admin','super-admin']));
+router.use(requireRole(['admin','super-admin','super_admin']));
 
 // Get paginated audit logs
 router.get('/', getAuditLogs);
