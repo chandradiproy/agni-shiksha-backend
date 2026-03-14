@@ -271,6 +271,7 @@ model Plan {
   users         User[]         @relation("UserPremiumPlan")
   subscriptions Subscription[]
   payments      Payment[]
+  coupons       Coupon[]       // NEW: Relation to Coupons
 
   @@map("plans")
 }
@@ -291,6 +292,27 @@ model Subscription {
   @@map("subscriptions")
 }
 
+// NEW COUPON MODEL
+model Coupon {
+  id                 String    @id @default(uuid()) @db.Uuid
+  code               String    @unique @db.VarChar(50)
+  discount_type      String    @db.VarChar(20) // 'PERCENTAGE' or 'FLAT'
+  discount_value     Float     // e.g., 20 for 20%, or 500 for 500 INR flat off
+  max_uses           Int?      // Null means unlimited uses
+  current_uses       Int       @default(0)
+  valid_from         DateTime  @default(now()) @db.Timestamptz
+  valid_until        DateTime? @db.Timestamptz // Null means no expiry
+  is_active          Boolean   @default(true)
+  applicable_plan_id String?   @db.Uuid // Null means applies to ALL plans
+
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  applicable_plan Plan?     @relation(fields: [applicable_plan_id], references: [id])
+  payments        Payment[]
+
+  @@map("coupons")
+}
+
 model Payment {
   id                 String   @id @default(uuid()) @db.Uuid
   user_id            String   @db.Uuid
@@ -301,11 +323,13 @@ model Payment {
   gateway_payment_id String?  @unique @db.VarChar(255)
   status             String   @default("created") @db.VarChar(30)
   plan_id            String?  @db.Uuid
+  coupon_id          String?  @db.Uuid // NEW: Track the coupon used
   description        String?  @db.Text
   created_at         DateTime @default(now()) @db.Timestamptz
 
   user User  @relation(fields: [user_id], references: [id])
   plan Plan? @relation(fields: [plan_id], references: [id])
+  coupon Coupon? @relation(fields: [coupon_id], references: [id]) // NEW Relation
 
   @@index([user_id, created_at(sort: Desc)])
   @@index([status, created_at(sort: Desc)])

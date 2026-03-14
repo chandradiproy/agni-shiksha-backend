@@ -17,6 +17,7 @@ import adminGamificationRoutes from './routes/admin/gamification.routes'; // <--
 import adminAuditRoutes from './routes/admin/audit.routes'; // <-- Import Audit
 import adminPlanRoutes from './routes/admin/plan.routes'; // <-- Import Plan Management Routes
 import adminFinancialRoutes from './routes/admin/financial.routes';
+import adminCouponRoutes from './routes/admin/coupon.routes'; // <-- Import Coupon Routes
 
 import adminAuthRoutes from './routes/adminAuth.routes';
 import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
@@ -54,6 +55,7 @@ app.use('/api/v1/admin/gamification', adminGamificationRoutes); // <-- Mount Gam
 app.use('/api/v1/admin/audit', adminAuditRoutes);
 app.use('/api/v1/admin/plans', adminPlanRoutes); // <-- Mount Plan Management Routes
 app.use('/api/v1/admin/financial', adminFinancialRoutes); // <-- Mount Financial Routes
+app.use('/api/v1/admin/coupons', adminCouponRoutes);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
