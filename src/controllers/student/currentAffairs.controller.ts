@@ -11,10 +11,16 @@ export const getArticles = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
+    const category = req.query.category as string; // NEW: Capture the category
     const skip = (page - 1) * limit;
 
-    // SCALABILITY: Aggressively cache the first page since 95% of traffic hits Page 1
-    const cacheKey = `articles_feed:page:${page}:limit:${limit}`;
+    const whereClause: any = { is_hidden: false };
+    if (category) {
+      whereClause.category = { equals: category, mode: 'insensitive' };
+    }
+
+    // Update cache key to include category so we don't serve "Sports" news to an "Economy" request
+    const cacheKey = `articles_feed:cat:${category || 'all'}:page:${page}:limit:${limit}`;
     
     if (page === 1) {
       const cachedPage = await redisClient.get(cacheKey);
@@ -25,10 +31,9 @@ export const getArticles = async (req: Request, res: Response) => {
 
     const [articles, totalCount] = await Promise.all([
       prisma.article.findMany({
-        where: { is_hidden: false },
+        where: whereClause,
         skip,
         take: limit,
-        // Pinned articles float to the top, then sort by publish date
         orderBy: [{ is_pinned: 'desc' }, { published_at: 'desc' }],
         select: {
           id: true,
@@ -36,14 +41,12 @@ export const getArticles = async (req: Request, res: Response) => {
           summary: true,
           image_url: true,
           source_name: true,
+          category: true, // Return category to UI
           published_at: true,
           is_pinned: true,
-          is_custom: true,
-          content:true,
-          // Exclude 'content' to keep the feed payload extremely lightweight
         }
       }),
-      prisma.article.count({ where: { is_hidden: false } })
+      prisma.article.count({ where: whereClause })
     ]);
 
     const responseData = {
@@ -52,7 +55,6 @@ export const getArticles = async (req: Request, res: Response) => {
       pagination: { total: totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) }
     };
 
-    // Cache the first page for 15 minutes (articles don't update every second)
     if (page === 1) {
       await redisClient.setEx(cacheKey, 900, JSON.stringify(responseData));
     }

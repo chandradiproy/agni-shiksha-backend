@@ -71,6 +71,8 @@ model User {
   doubt_answers   DoubtAnswer[]  // <-- NEW RELATION
   reports_made    Report[]       // <-- NEW RELATION
   transactions  PaymentTransaction[] // New relation
+  bookmarks    Bookmark[]
+  notes        Note[]
 
   @@index([phone_number])
   @@index([xp_total(sort: Desc)])
@@ -398,6 +400,7 @@ model Article {
   summary      String   @db.Text
   content      String?  @db.Text // <-- NEW: Full HTML/Markdown body
   source_name  String   @db.VarChar(100)
+  category     String   @default("General") @db.VarChar(50) // NEW: Economy, Polity, Science, Sports, etc.
   source_url   String?  @unique @db.VarChar(1000) // <-- CHANGED: Nullable for custom articles
   image_url    String?  @db.Text
   is_custom    Boolean  @default(false) // <-- NEW: Flag to identify admin-created news
@@ -573,4 +576,34 @@ model PaymentTransaction {
   user User @relation(fields: [user_id], references: [id])
 
   @@map("payment_transactions")
+}
+
+// ==========================================
+// BOOKMARKS & NOTES (Utility)
+// ==========================================
+model Bookmark {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  item_type  String   @db.VarChar(50) // e.g., 'ARTICLE', 'TEST', 'STUDY_MATERIAL'
+  item_id    String   @db.Uuid // ID of the bookmarked item
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Prevent a user from bookmarking the exact same item twice
+  @@unique([user_id, item_type, item_id])
+  @@map("bookmarks")
+}
+
+model Note {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  title      String?  @db.VarChar(255)
+  content    String   @db.Text
+  created_at DateTime @default(now()) @db.Timestamptz
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notes")
 }

@@ -1,5 +1,4 @@
 // src/index.ts
-
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -28,6 +27,8 @@ import studyRoutes from './routes/student/study.routes';
 import currentAffairsRoutes from './routes/student/currentAffairs.routes';
 import socialRoutes from './routes/student/social.routes';
 import premiumRoutes from './routes/student/premium.routes';
+import utilityRoutes from './routes/student/utility.routes';
+import homeRoutes from './routes/student/home.routes';
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 import { schedulePremiumExpirer } from './corn/premiumExperier'; // <-- Import Premium Expirer Cron Job
@@ -66,6 +67,8 @@ app.use('/api/v1/student/study', studyRoutes);
 app.use('/api/v1/student/articles', currentAffairsRoutes);
 app.use('/api/v1/student/social', socialRoutes);
 app.use('/api/v1/student/premium', premiumRoutes);
+app.use('/api/v1/student/utilities', utilityRoutes);
+app.use('/api/v1/student/home', homeRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {
