@@ -14,7 +14,7 @@ datasource db {
 
 model User {
   id            String  @id @default(uuid()) @db.Uuid
-  phone_number  String  @unique @db.VarChar(15)
+  phone_number  String? @unique @db.VarChar(15)
   email         String? @unique @db.VarChar(255)
   password_hash String? @db.VarChar(255) // Optional for MVP if using only OTP/Google
   full_name     String? @db.VarChar(100)
