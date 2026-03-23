@@ -8,6 +8,8 @@ export interface RedisClientInterface {
   get(key: string): Promise<string | null>;
   setEx(key: string, seconds: number, value: string): Promise<any>;
   del(key: string): Promise<any>;
+  // Added to support the new CacheService without @ts-ignore
+  incr?(key: string): Promise<number>; 
 }
 
 let redisInstance: any = null;
@@ -45,6 +47,19 @@ const redisProxy = new Proxy({} as RedisClientInterface, {
     return typeof property === 'function' ? property.bind(redisInstance) : property;
   }
 }) as RedisClientInterface;
+
+export const redis = new Proxy({} as RedisClientInterface, {
+  get: (target, prop) => {
+    if (!redisInstance) {
+      throw new Error('[Redis] Client accessed before initialization completed!');
+    }
+    const property = redisInstance[prop as keyof typeof redisInstance];
+    if (typeof property === 'function') {
+      return property.bind(redisInstance);
+    }
+    return property;
+  },
+});
 
 export { initializeRedis };
 export default redisProxy;
