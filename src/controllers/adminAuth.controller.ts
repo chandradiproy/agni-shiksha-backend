@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db';
 import redisClient from '../config/redis';
-import { sendOTP } from '../utils/mailer';
+import { sendEmailOTP } from '../utils/mailer';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 
@@ -37,7 +37,7 @@ export const requestAdminOtp = async (req: Request, res: Response) => {
     await redisClient.setEx(`admin_otp:${email}`, 300, otp);
 
     // Send email via Nodemailer
-    await sendOTP(email, otp);
+    await sendEmailOTP(email, otp);
 
     res.status(200).json({ message: 'Admin OTP sent successfully' });
   } catch (error) {

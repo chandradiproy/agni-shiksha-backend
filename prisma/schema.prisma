@@ -64,6 +64,7 @@ model User {
   referred_by   User?          @relation("UserReferrals", fields: [referred_by_id], references: [id])
   referrals     User[]         @relation("UserReferrals")
   sessions      UserSession[]
+  credentials   UserCredential[] // Biometric/WebAuthn credentials
   test_attempts TestAttempt[]
   payments      Payment[]
   subscriptions Subscription[]
@@ -84,7 +85,7 @@ model User {
 model UserSession {
   id                 String   @id @default(uuid()) @db.Uuid
   user_id            String   @db.Uuid
-  jwt_token_hash     String   @unique @db.VarChar(255)
+  jwt_token_hash     String   @db.VarChar(255)
   device_fingerprint String   @db.VarChar(255)
   device_name        String?  @db.VarChar(100)
   ip_address         String?  @db.Inet
@@ -95,7 +96,25 @@ model UserSession {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id, is_active])
   @@map("user_sessions")
+}
+
+model UserCredential {
+  id            String   @id @default(uuid()) @db.Uuid
+  user_id       String   @db.Uuid
+  credential_id String   @unique      // Base64URL-encoded credential ID from WebAuthn
+  public_key    Bytes                  // Stored COSE public key
+  counter       BigInt   @default(0)   // Signature counter for replay protection
+  device_type   String?  @db.VarChar(50) // "singleDevice" or "multiDevice"
+  backed_up     Boolean  @default(false)
+  transports    Json?                  // e.g., ["internal", "usb"]
+  created_at    DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("user_credentials")
 }
 
 model OtpVerification {

@@ -17,7 +17,8 @@ export const createUpstashClient = () => {
     return {
       get: async (key: string) => {
         const value = await client.get(key);
-        return value ? String(value) : null;
+        if (value === null || value === undefined) return null;
+        return typeof value === 'object' ? JSON.stringify(value) : String(value);
       },
       setEx: async (key: string, seconds: number, value: string) => 
         client.set(key, value, { ex: seconds }),

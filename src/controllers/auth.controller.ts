@@ -3,41 +3,91 @@
 import { Request, Response } from 'express';
 import prisma from '../config/db';
 import redisClient from '../config/redis';
-import { sendOTP } from '../utils/mailer';
+import { sendEmailOTP } from '../utils/mailer';
+import { sendSmsOtp } from '../utils/sms';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'fallback_access_secret';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'fallback_refresh_secret';
 
-const generateToken = (userId: string) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
+// ==========================================
+// TOKEN GENERATION (Access + Refresh Pair)
+// ==========================================
+
+const generateAccessToken = (userId: string): string => {
+  return jwt.sign({ userId, type: 'access' }, JWT_ACCESS_SECRET, { expiresIn: '15m' });
+};
+
+const generateRefreshToken = (userId: string): string => {
+  return jwt.sign({ userId, type: 'refresh' }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+};
+
+/**
+ * Generates an access + refresh token pair and stores the refresh session in the database.
+ * Uses the existing UserSession model that was previously unused.
+ */
+const generateTokenPair = async (userId: string, req: Request) => {
+  const accessToken = generateAccessToken(userId);
+  const refreshToken = generateRefreshToken(userId);
+
+  // Hash the refresh token before storing (so even if DB leaks, tokens can't be used)
+  const salt = await bcrypt.genSalt(10);
+  const tokenHash = await bcrypt.hash(refreshToken, salt);
+
+  // Store session (fire-and-forget for performance — login response should be instant)
+  setImmediate(async () => {
+    try {
+      await prisma.userSession.create({
+        data: {
+          user_id: userId,
+          jwt_token_hash: tokenHash,
+          device_fingerprint: req.body.device_fingerprint || 'unknown',
+          device_name: req.body.device_name || null,
+          ip_address: req.ip || req.socket.remoteAddress || 'unknown',
+          user_agent: req.headers['user-agent'] || null,
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        }
+      });
+    } catch (e) {
+      console.error('[Session Create Error]:', e);
+    }
+  });
+
+  return { accessToken, refreshToken };
 };
 
 const isEmail = (id: string) => id.includes('@');
+
+// ==========================================
+// HELPER: Generate & Send OTP
+// ==========================================
+const generateAndSendOtp = async (id: string): Promise<void> => {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Save to Redis for 5 minutes
+  await redisClient.setEx(`otp:${id}`, 300, otp);
+
+  if (isEmail(id)) {
+    await sendEmailOTP(id, otp);
+  } else {
+    await sendSmsOtp(id, otp);
+  }
+};
 
 // ==========================================
 // 1. REQUEST OTP (For Login OR Registration)
 // ==========================================
 export const requestOtp = async (req: Request, res: Response) => {
   try {
-    const { id } = req.body; // 'id' can be email or phone
-    if (!id) return res.status(400).json({ error: 'Email or Phone is required' });
+    const { id } = req.body;
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await generateAndSendOtp(id);
 
-    // Save to Redis for 5 minutes
-    await redisClient.setEx(`otp:${id}`, 300, otp);
-
-    if (isEmail(id)) {
-      await sendOTP(id, otp);
-    } else {
-      // TODO: Integrate SMS gateway like Twilio or Fast2SMS here
-      console.log(`[SMS MOCK] OTP for ${id} is ${otp}`);
-    }
-
-    res.status(200).json({ message: 'OTP sent successfully' });
+    res.status(200).json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
     console.error('Request OTP Error:', error);
     res.status(500).json({ error: 'Failed to send OTP' });
@@ -51,11 +101,7 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { id, password, full_name, otp } = req.body;
 
-    if (!id || !password || !full_name || !otp) {
-      return res.status(400).json({ error: 'All fields including OTP are required' });
-    }
-
-    // Verify OTP first
+    // Verify OTP
     const storedOtp = await redisClient.get(`otp:${id}`);
     if (!storedOtp || storedOtp !== otp) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
@@ -64,7 +110,7 @@ export const register = async (req: Request, res: Response) => {
     // Check if user already exists
     const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
     const existingUser = await prisma.user.findUnique({ where: idQuery });
-    
+
     if (existingUser) {
       return res.status(400).json({ error: 'An account with this ID already exists' });
     }
@@ -81,9 +127,21 @@ export const register = async (req: Request, res: Response) => {
     });
 
     await redisClient.del(`otp:${id}`); // Clean up OTP
-    const token = generateToken(user.id);
 
-    res.status(201).json({ message: 'Registration successful', token, user });
+    const tokens = await generateTokenPair(user.id, req);
+
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        phone_number: user.phone_number,
+      }
+    });
   } catch (error) {
     console.error('Registration Error:', error);
     res.status(500).json({ error: 'Failed to register user' });
@@ -96,7 +154,6 @@ export const register = async (req: Request, res: Response) => {
 export const loginWithPassword = async (req: Request, res: Response) => {
   try {
     const { id, password } = req.body;
-    if (!id || !password) return res.status(400).json({ error: 'ID and password required' });
 
     const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
     const user = await prisma.user.findUnique({ where: idQuery });
@@ -105,11 +162,32 @@ export const loginWithPassword = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid credentials or user registered via Google/OTP' });
     }
 
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account has been deactivated' });
+    }
+
+    if (user.is_banned) {
+      return res.status(403).json({ error: 'Account has been suspended' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    const token = generateToken(user.id);
-    res.status(200).json({ message: 'Login successful', token, user });
+    const tokens = await generateTokenPair(user.id, req);
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        phone_number: user.phone_number,
+        is_premium: user.is_premium,
+      }
+    });
   } catch (error) {
     console.error('Password Login Error:', error);
     res.status(500).json({ error: 'Failed to login' });
@@ -122,7 +200,6 @@ export const loginWithPassword = async (req: Request, res: Response) => {
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
     const { id, otp } = req.body;
-    if (!id || !otp) return res.status(400).json({ error: 'ID and OTP required' });
 
     const storedOtp = await redisClient.get(`otp:${id}`);
     if (!storedOtp || storedOtp !== otp) {
@@ -130,7 +207,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     }
 
     const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
-    
+
     // Upsert creates the user if they don't exist, logs them in if they do
     const user = await prisma.user.upsert({
       where: idQuery,
@@ -138,10 +215,30 @@ export const verifyOtp = async (req: Request, res: Response) => {
       create: idQuery,
     });
 
-    await redisClient.del(`otp:${id}`);
-    const token = generateToken(user.id);
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account has been deactivated' });
+    }
 
-    res.status(200).json({ message: 'Login successful', token, user });
+    if (user.is_banned) {
+      return res.status(403).json({ error: 'Account has been suspended' });
+    }
+
+    await redisClient.del(`otp:${id}`);
+
+    const tokens = await generateTokenPair(user.id, req);
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        phone_number: user.phone_number,
+      }
+    });
   } catch (error) {
     console.error('Verify OTP Error:', error);
     res.status(500).json({ error: 'Failed to verify OTP' });
@@ -154,7 +251,6 @@ export const verifyOtp = async (req: Request, res: Response) => {
 export const googleLogin = async (req: Request, res: Response) => {
   try {
     const { idToken } = req.body;
-    if (!idToken) return res.status(400).json({ error: 'Google ID Token is required' });
 
     const ticket = await googleClient.verifyIdToken({
       idToken,
@@ -173,10 +269,336 @@ export const googleLogin = async (req: Request, res: Response) => {
       },
     });
 
-    const token = generateToken(user.id);
-    res.status(200).json({ message: 'Google Login successful', token, user });
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account has been deactivated' });
+    }
+
+    const tokens = await generateTokenPair(user.id, req);
+
+    res.status(200).json({
+      success: true,
+      message: 'Google Login successful',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+      }
+    });
   } catch (error) {
     console.error('Google Login Error:', error);
     res.status(500).json({ error: 'Failed to authenticate with Google' });
+  }
+};
+
+// ==========================================
+// 6. REFRESH TOKEN
+// ==========================================
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken: oldRefreshToken } = req.body;
+
+    // 1. Verify the refresh JWT signature and expiry
+    let decoded: { userId: string; type: string };
+    try {
+      decoded = jwt.verify(oldRefreshToken, JWT_REFRESH_SECRET) as { userId: string; type: string };
+    } catch {
+      return res.status(401).json({ error: 'Refresh token is invalid or expired' });
+    }
+
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({ error: 'Invalid token type' });
+    }
+
+    // 2. Find all active sessions for this user and check if this refresh token matches one
+    const activeSessions = await prisma.userSession.findMany({
+      where: {
+        user_id: decoded.userId,
+        is_active: true,
+        expires_at: { gt: new Date() },
+      }
+    });
+
+    let matchedSession = null;
+    for (const session of activeSessions) {
+      const isMatch = await bcrypt.compare(oldRefreshToken, session.jwt_token_hash);
+      if (isMatch) {
+        matchedSession = session;
+        break;
+      }
+    }
+
+    if (!matchedSession) {
+      return res.status(401).json({ error: 'Session not found or already revoked' });
+    }
+
+    // 3. Invalidate the old session (rotation — each refresh token is single-use)
+    await prisma.userSession.update({
+      where: { id: matchedSession.id },
+      data: { is_active: false }
+    });
+
+    // 4. Generate new token pair
+    const tokens = await generateTokenPair(decoded.userId, req);
+
+    res.status(200).json({
+      success: true,
+      message: 'Token refreshed successfully',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
+  } catch (error) {
+    console.error('Refresh Token Error:', error);
+    res.status(500).json({ error: 'Failed to refresh token' });
+  }
+};
+
+// ==========================================
+// 7. LOGOUT (Single Session)
+// ==========================================
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id as string;
+    const sessionId = (req as any).user.sessionId as string;
+
+    if (sessionId) {
+      await prisma.userSession.update({
+        where: { id: sessionId },
+        data: { is_active: false }
+      });
+    }
+
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout Error:', error);
+    res.status(500).json({ error: 'Failed to logout' });
+  }
+};
+
+// ==========================================
+// 8. LOGOUT ALL (Revoke All Sessions)
+// ==========================================
+export const logoutAll = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id as string;
+
+    const result = await prisma.userSession.updateMany({
+      where: { user_id: userId, is_active: true },
+      data: { is_active: false }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Logged out from ${result.count} session(s)`,
+      sessions_revoked: result.count,
+    });
+  } catch (error) {
+    console.error('Logout All Error:', error);
+    res.status(500).json({ error: 'Failed to logout from all devices' });
+  }
+};
+
+// ==========================================
+// 9. GET CURRENT USER PROFILE
+// ==========================================
+export const getMe = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id as string;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        phone_number: true,
+        full_name: true,
+        avatar_id: true,
+        target_exam_id: true,
+        is_premium: true,
+        premium_plan_id: true,
+        premium_expires_at: true,
+        xp_total: true,
+        gems: true,
+        level: true,
+        current_streak: true,
+        longest_streak: true,
+        last_activity_date: true,
+        is_active: true,
+        onboarding_completed: true,
+        referral_code: true,
+        created_at: true,
+        // Explicitly excluded: password_hash, is_banned (internal), deleted_at
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    console.error('Get Profile Error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+};
+
+// ==========================================
+// 10. UPDATE USER PROFILE
+// ==========================================
+export const updateMe = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id as string;
+
+    // Only allow updating specific safe fields
+    const allowedFields: Record<string, any> = {};
+    const updatableFields = ['full_name', 'avatar_id', 'target_exam_id', 'study_language', 'prep_level', 'daily_study_hours'];
+
+    for (const field of updatableFields) {
+      if (req.body[field] !== undefined) {
+        allowedFields[field] = req.body[field];
+      }
+    }
+
+    if (Object.keys(allowedFields).length === 0) {
+      return res.status(400).json({ error: 'No updatable fields provided' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: allowedFields,
+      select: {
+        id: true,
+        email: true,
+        phone_number: true,
+        full_name: true,
+        avatar_id: true,
+        target_exam_id: true,
+        is_premium: true,
+        xp_total: true,
+        level: true,
+        current_streak: true,
+      }
+    });
+
+    res.status(200).json({ success: true, message: 'Profile updated successfully', data: updatedUser });
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+};
+
+// ==========================================
+// 11. FORGOT PASSWORD (Send OTP)
+// ==========================================
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.body;
+
+    // Verify user exists
+    const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
+    const user = await prisma.user.findUnique({ where: idQuery });
+
+    if (!user) {
+      // Return success even if user doesn't exist (prevents user enumeration)
+      return res.status(200).json({ success: true, message: 'If an account exists, an OTP has been sent' });
+    }
+
+    await generateAndSendOtp(id);
+
+    res.status(200).json({ success: true, message: 'If an account exists, an OTP has been sent' });
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    res.status(500).json({ error: 'Failed to process forgot password request' });
+  }
+};
+
+// ==========================================
+// 12. RESET PASSWORD (Verify OTP + Set New Password)
+// ==========================================
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { id, otp, new_password } = req.body;
+
+    // Verify OTP
+    const storedOtp = await redisClient.get(`otp:${id}`);
+    if (!storedOtp || storedOtp !== otp) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    // Find user
+    const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
+    const user = await prisma.user.findUnique({ where: idQuery });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Hash new password and update
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(new_password, salt);
+
+    await prisma.$transaction([
+      // 1. Update password
+      prisma.user.update({
+        where: { id: user.id },
+        data: { password_hash }
+      }),
+      // 2. Invalidate ALL sessions for security
+      prisma.userSession.updateMany({
+        where: { user_id: user.id, is_active: true },
+        data: { is_active: false }
+      })
+    ]);
+
+    await redisClient.del(`otp:${id}`);
+
+    res.status(200).json({ success: true, message: 'Password reset successful. Please login with your new password.' });
+  } catch (error) {
+    console.error('Reset Password Error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+};
+
+// ==========================================
+// 13. DELETE ACCOUNT (GDPR Soft-Delete)
+// ==========================================
+export const deleteAccount = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id as string;
+
+    // If user has a password, optionally verify it for security
+    if (req.body.password) {
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { password_hash: true } });
+      if (user?.password_hash) {
+        const isMatch = await bcrypt.compare(req.body.password, user.password_hash);
+        if (!isMatch) {
+          return res.status(400).json({ error: 'Incorrect password' });
+        }
+      }
+    }
+
+    await prisma.$transaction([
+      // 1. Soft-delete the user
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          is_active: false,
+          deleted_at: new Date(),
+          device_tokens: [], // Clear push notification tokens
+          device_fingerprints: [],
+        }
+      }),
+      // 2. Invalidate all sessions
+      prisma.userSession.updateMany({
+        where: { user_id: userId, is_active: true },
+        data: { is_active: false }
+      })
+    ]);
+
+    res.status(200).json({ success: true, message: 'Account deleted successfully. Data will be permanently purged after 30 days.' });
+  } catch (error) {
+    console.error('Delete Account Error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 };

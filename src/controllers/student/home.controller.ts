@@ -26,6 +26,7 @@ const fetchWithVersionedCache = async <T>(
 
 export const getHomeDashboard = async (req: Request, res: Response) => {
   try {
+    const t0 = performance.now();
     const userId = (req as any).user.id as string;
 
     // 1. Fetch User Data First (Needed for Streak Logic & Recommendations)
@@ -51,37 +52,41 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
     // STREAK ENGINE (Auto-Calculates Daily Streak)
     // ==========================================
     const now = new Date();
-    // Normalize to midnight to safely compare dates regardless of the exact hour
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    let lastActivityDate = user.last_activity_date 
-      ? new Date(user.last_activity_date.getFullYear(), user.last_activity_date.getMonth(), user.last_activity_date.getDate()) 
+    // Compare dates safely using simple ISO strings to avoid JS Timezone shifting
+    const todayStr = now.toISOString().substring(0, 10);
+    const lastDateStr = user.last_activity_date 
+      ? user.last_activity_date.toISOString().substring(0, 10) 
       : null;
 
     let newStreak = user.current_streak;
     let newLongest = user.longest_streak;
     let needsDbUpdate = false;
 
-    if (!lastActivityDate) {
+    if (!lastDateStr) {
       // First time opening the app!
       newStreak = 1;
       newLongest = 1;
       needsDbUpdate = true;
-    } else {
-      const diffTime = Math.abs(today.getTime() - lastActivityDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } else if (todayStr !== lastDateStr) {
+      // Day has changed! Calculate difference in days.
+      const todayDate = new Date(todayStr); // Local midnight parsing identical strings
+      const lastDate = new Date(lastDateStr);
+      const diffTime = Math.abs(todayDate.getTime() - lastDate.getTime());
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays === 1) {
-        // Active yesterday! Increment streak.
+        // Active yesterday UTC! Increment streak.
         newStreak += 1;
         if (newStreak > newLongest) newLongest = newStreak;
-        needsDbUpdate = true;
       } else if (diffDays > 1) {
-        // Missed a day. Reset to 1.
+        // Missed one or more days. Reset to 1.
         newStreak = 1;
-        needsDbUpdate = true;
       }
-      // If diffDays === 0, they already opened the app today. Streak stays the same.
+      needsDbUpdate = true;
+    } else if (newStreak === 0) {
+      // Failsafe zero-catch
+      newStreak = 1;
+      needsDbUpdate = true;
     }
 
     // Fire-and-forget DB update for streak so we don't slow down the API response!
@@ -102,6 +107,8 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       });
     }
 
+    const t1 = performance.now();
+    
     // ==========================================
     // PARALLEL DATA AGGREGATION (Cached for Instant UI Render)
     // ==========================================
@@ -170,9 +177,16 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       )
     ]);
 
+    const t2 = performance.now();
+
     // Send the beautifully aggregated payload to the mobile app
     res.status(200).json({
       success: true,
+      debug_timing: {
+        userQ: (t1 - t0).toFixed(2) + 'ms',
+        dashboardQ: (t2 - t1).toFixed(2) + 'ms',
+        total: (t2 - t0).toFixed(2) + 'ms'
+      },
       data: {
         user_stats: {
           full_name: user.full_name,

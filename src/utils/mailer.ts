@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendOTP = async (email: string, otp: string) => {
+export const sendEmailOTP = async (email: string, otp: string) => {
   const mailOptions = {
     from: `"Agni Shiksha" <${process.env.EMAIL_USER}>`,
     to: email,
