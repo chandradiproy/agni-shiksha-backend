@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 import prisma from '../../config/db';
-import redisClient from '../../config/redis'; // Added for caching
+import { CacheService } from '../../services/cache.service';
 
 // Create a dedicated IORedis connection specifically for BullMQ.
 // BullMQ requires native IORedis for blocking operations. It cannot use the REST Proxy.
@@ -34,6 +34,13 @@ export const getAvailableTests = async (req: Request, res: Response) => {
     if (examId) whereClause.exam_id = examId as string;
     if (type) whereClause.type = type as string;
 
+    const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type || 'all'}:page:${page}:limit:${limit}`;
+    const cachedResponse = await CacheService.get<any>('tests', cacheScope);
+
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
+
     const [tests, totalCount] = await Promise.all([
       prisma.testSeries.findMany({
         where: whereClause,
@@ -56,11 +63,15 @@ export const getAvailableTests = async (req: Request, res: Response) => {
       prisma.testSeries.count({ where: whereClause })
     ]);
 
-    res.status(200).json({
+    const responsePayload = {
       success: true,
       data: tests,
       pagination: { total: totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) }
-    });
+    };
+
+    await CacheService.set('tests', cacheScope, responsePayload, 600);
+
+    res.status(200).json(responsePayload);
   } catch (error) {
     console.error('Get Available Tests Error:', error);
     res.status(500).json({ error: 'Failed to fetch available tests' });
@@ -75,9 +86,18 @@ export const getTestDetails = async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = (req as any).user.id as string;
 
-    const testSeries = await prisma.testSeries.findUnique({
-      where: { id: id as string, is_active: true, is_published: true },
-    });
+    const testInfoScope = `test_details:${id}`;
+    let testSeries = await CacheService.get<any>('tests', testInfoScope);
+
+    if (!testSeries) {
+      testSeries = await prisma.testSeries.findFirst({
+        where: { id: id as string, is_active: true, is_published: true },
+      });
+
+      if (testSeries) {
+        await CacheService.set('tests', testInfoScope, testSeries, 900);
+      }
+    }
 
     if (!testSeries) {
       return res.status(404).json({ error: 'Test Series not found or unavailable' });
@@ -149,32 +169,38 @@ export const startTest = async (req: Request, res: Response) => {
     }
 
     // Fetch Questions
-    const rawQuestions = await prisma.question.findMany({
-      where: { test_series_id: testSeries.id },
-      orderBy: { display_order: 'asc' }
-    });
+    const questionsScope = `start_test_questions:${testSeries.id}`;
+    let secureQuestions = await CacheService.get<any[]>('tests', questionsScope);
 
-    // CRITICAL FIX: Map questions securely. 
-    // We MUST remove `is_correct` and `correct_option_id` from the payload so tech-savvy students can't cheat!
-    const secureQuestions = rawQuestions.map((q) => {
-      // Map options to explicitly omit the 'is_correct' flag
-      const secureOptions = (q.options as any[]).map(opt => ({
-        id: opt.id,
-        text: opt.text
-      }));
+    if (!secureQuestions) {
+      const rawQuestions = await prisma.question.findMany({
+        where: { test_series_id: testSeries.id },
+        orderBy: { display_order: 'asc' }
+      });
 
-      return {
-        id: q.id,
-        subject: q.subject,
-        topic: q.topic,
-        section: q.section,
-        question_type: q.question_type,
-        question_text: q.question_text,
-        question_text_hindi: q.question_text_hindi,
-        marks: q.marks,
-        options: secureOptions
-      };
-    });
+      // CRITICAL FIX: Map questions securely.
+      // We MUST remove `is_correct` and `correct_option_id` from the payload so tech-savvy students can't cheat!
+      secureQuestions = rawQuestions.map((q) => {
+        const secureOptions = (q.options as any[]).map(opt => ({
+          id: opt.id,
+          text: opt.text
+        }));
+
+        return {
+          id: q.id,
+          subject: q.subject,
+          topic: q.topic,
+          section: q.section,
+          question_type: q.question_type,
+          question_text: q.question_text,
+          question_text_hindi: q.question_text_hindi,
+          marks: q.marks,
+          options: secureOptions
+        };
+      });
+
+      await CacheService.set('tests', questionsScope, secureQuestions, 3600);
+    }
 
     res.status(200).json({
       success: true,
@@ -218,17 +244,14 @@ export const submitTest = async (req: Request, res: Response) => {
     const testSeries = attempt.test_series;
 
     // SCALABILITY FIX 1: Fetch Answer Key from Redis Cache
-    const cacheKey = `test_answer_key:${testSeries.id}`;
-    let cachedData = await redisClient.get(cacheKey);
-    let questions;
+    const cacheScope = `test_answer_key:${testSeries.id}`;
+    let questions = await CacheService.get<any[]>('tests', cacheScope);
 
-    if (cachedData) {
-      questions = JSON.parse(cachedData);
-    } else {
+    if (!questions) {
       questions = await prisma.question.findMany({
         where: { test_series_id: testSeries.id }
       });
-      await redisClient.setEx(cacheKey, 7200, JSON.stringify(questions));
+      await CacheService.set('tests', cacheScope, questions, 7200);
     }
 
     // Scoring Variables

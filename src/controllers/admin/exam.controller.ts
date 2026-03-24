@@ -2,6 +2,10 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
+import { CacheService } from '../../services/cache.service';
+import { QueueService } from '../../services/queue.service';
+
+const CACHE_TAG = 'exams';
 
 // Create a new Exam category (e.g., SSC CGL)
 export const createExam = async (req: Request, res: Response) => {
@@ -36,6 +40,9 @@ export const createExam = async (req: Request, res: Response) => {
         details: { name, slug }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(201).json({ message: 'Exam created successfully', exam: newExam });
   } catch (error: any) {
@@ -106,6 +113,8 @@ export const updateExam = async (req: Request, res: Response) => {
         target_id: updatedExam.id
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Exam updated successfully', exam: updatedExam });
   } catch (error) {
@@ -159,6 +168,8 @@ export const deleteExam = async (req: Request, res: Response) => {
         details: { exam_name: existingExam.name }
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Exam deleted successfully' });
   } catch (error) {

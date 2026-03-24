@@ -6,6 +6,10 @@ import csv from 'csv-parser';
 import { z } from 'zod';
 import prisma from '../../config/db';
 import { sanitizeContent } from '../../utils/sanitizer';
+import { CacheService } from '../../services/cache.service';
+import { QueueService } from '../../services/queue.service';
+
+const CACHE_TAG = 'tests';
 
 // Zod Schema (works for both CSV strings and Frontend JSON numbers)
 const questionRowSchema = z.object({
@@ -294,6 +298,9 @@ export const updateQuestion = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(200).json({ message: 'Question updated successfully', question: updatedQuestion });
   } catch (error) {
     console.error('Update Question Error:', error);
@@ -328,6 +335,9 @@ export const deleteQuestion = async (req: Request, res: Response) => {
         target_id: questionId as string
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Question deleted successfully' });
   } catch (error) {

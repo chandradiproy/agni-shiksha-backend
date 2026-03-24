@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import prisma from '../../config/db';
+import { CacheService } from '../../services/cache.service';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || 'dummy_key_id',
@@ -51,11 +52,18 @@ const calculateDiscountedPrice = async (planId: string, billingCycle: string, co
 // ==========================================
 export const getActivePlans = async (req: Request, res: Response) => {
   try {
-    const plans = await prisma.plan.findMany({
-      where: { is_active: true },
-      orderBy: { display_order: 'asc' },
-      select: { id: true, name: true, slug: true, monthly_price_paise: true, annual_price_paise: true, features: true }
-    });
+    const cacheScope = 'premium:active_plans';
+    let plans = await CacheService.get<any[]>('premium', cacheScope);
+
+    if (!plans) {
+      plans = await prisma.plan.findMany({
+        where: { is_active: true },
+        orderBy: { display_order: 'asc' },
+        select: { id: true, name: true, slug: true, monthly_price_paise: true, annual_price_paise: true, features: true }
+      });
+      await CacheService.set('premium', cacheScope, plans, 1800);
+    }
+
     res.status(200).json({ success: true, data: plans });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch premium plans' });

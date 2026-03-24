@@ -3,6 +3,10 @@
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
 
+import { CacheService } from '../../services/cache.service';
+import { QueueService } from '../../services/queue.service';
+const CACHE_TAG = 'premium';
+
 // ==========================================
 // 1. CREATE A NEW PREMIUM PLAN
 // ==========================================
@@ -36,6 +40,8 @@ export const createPlan = async (req: Request, res: Response) => {
         details: { plan_name: name }
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(201).json({ success: true, message: 'Plan created successfully', data: newPlan });
   } catch (error: any) {
@@ -98,6 +104,9 @@ export const updatePlan = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(200).json({ success: true, message: 'Plan updated successfully', data: updatedPlan });
   } catch (error) {
     console.error('Update Plan Error:', error);
@@ -146,6 +155,9 @@ export const deletePlan = async (req: Request, res: Response) => {
         details: { plan_name: existingPlan.name }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ success: true, message: 'Plan deleted successfully' });
   } catch (error) {

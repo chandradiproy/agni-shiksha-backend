@@ -2,19 +2,23 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
-import redisClient from '../../config/redis'; // Assuming your redis client is exported here
+import { CacheService } from '../../services/cache.service';
 
-// Helper function for Redis caching shared global data
-const fetchWithCache = async (key: string, ttlSeconds: number, fetcher: () => Promise<any>) => {
+const fetchWithVersionedCache = async <T>(
+  tag: string,
+  scope: string,
+  ttlSeconds: number,
+  fetcher: () => Promise<T>
+): Promise<T> => {
   try {
-    const cached = await redisClient.get(key);
-    if (cached) return JSON.parse(cached);
+    const cached = await CacheService.get<T>(tag, scope);
+    if (cached !== null) return cached;
 
     const freshData = await fetcher();
-    await redisClient.setEx(key, ttlSeconds, JSON.stringify(freshData));
+    await CacheService.set(tag, scope, freshData, ttlSeconds);
     return freshData;
   } catch (err) {
-    console.error(`Redis Cache Error for key ${key}:`, err);
+    console.error(`Versioned Cache Error for tag ${tag} scope ${scope}:`, err);
     // Fallback to database if Redis is temporarily down
     return await fetcher();
   }
@@ -50,7 +54,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
     // 2. FETCH SHARED DATA (Aggressively Cached in Redis)
     const [recommendedTests, currentAffairs, dailyQuests] = await Promise.all([
       // Cache tests specific to the user's selected exam for 10 minutes
-      fetchWithCache(`dashboard:tests:${examId}`, 600, () => {
+      fetchWithVersionedCache('tests', `dashboard:tests:${examId}`, 600, () => {
         if (examId === 'unassigned') return Promise.resolve([]);
         return prisma.testSeries.findMany({
           where: { exam_id: examId, is_active: true, is_published: true },
@@ -61,7 +65,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       }),
 
       // Cache top 5 latest news articles globally for 15 minutes
-      fetchWithCache(`dashboard:articles:latest`, 900, () => {
+      fetchWithVersionedCache('articles', 'dashboard:articles:latest', 900, () => {
         return prisma.article.findMany({
           where: { is_hidden: false },
           take: 5,
@@ -71,7 +75,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       }),
 
       // Cache active daily quests globally for 1 hour
-      fetchWithCache(`dashboard:quests:active`, 3600, () => {
+      fetchWithVersionedCache('quests', 'dashboard:quests:active', 3600, () => {
         return prisma.questConfig.findMany({
           where: { is_active: true },
           take: 3,
@@ -112,11 +116,11 @@ export const getAiInsights = async (req: Request, res: Response) => {
     const userId = (req as any).user.id as string;
 
     // Cache the AI insights per user for 30 minutes (recalculated on test submissions anyway)
-    const cacheKey = `dashboard:ai_insights:${userId}`;
-    const cachedInsights = await redisClient.get(cacheKey);
+    const cacheScope = `dashboard:ai_insights:${userId}`;
+    const cachedInsights = await CacheService.get<any>('ai-insights', cacheScope);
     
     if (cachedInsights) {
-      return res.status(200).json({ success: true, data: JSON.parse(cachedInsights) });
+      return res.status(200).json({ success: true, data: cachedInsights });
     }
 
     // Fetch user's last 10 test attempts to analyze performance
@@ -180,7 +184,7 @@ export const getAiInsights = async (req: Request, res: Response) => {
     };
 
     // Cache the analyzed data for 30 minutes
-    await redisClient.setEx(cacheKey, 1800, JSON.stringify(insightsPayload));
+    await CacheService.set('ai-insights', cacheScope, insightsPayload, 1800);
 
     res.status(200).json({ success: true, data: insightsPayload });
 

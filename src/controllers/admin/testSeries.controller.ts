@@ -2,6 +2,10 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
+import { CacheService } from '../../services/cache.service';
+import { QueueService } from '../../services/queue.service';
+
+const CACHE_TAG = 'tests';
 
 // Create a new Test Series under an Exam
 export const createTestSeries = async (req: Request, res: Response) => {
@@ -71,6 +75,8 @@ export const createTestSeries = async (req: Request, res: Response) => {
         details: { title }
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(201).json({ message: 'Test Series created successfully', testSeries: newTestSeries });
   } catch (error) {
@@ -145,6 +151,8 @@ export const updateTestSeries = async (req: Request, res: Response) => {
         target_id: updatedTestSeries.id
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Test Series updated successfully', testSeries: updatedTestSeries });
   } catch (error) {
@@ -181,7 +189,9 @@ export const deleteTestSeries = async (req: Request, res: Response) => {
         target_id: id as string
       }
     });
-
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+    
     res.status(200).json({ message: 'Test Series deleted successfully' });
   } catch (error) {
     console.error('Delete Test Series Error:', error);

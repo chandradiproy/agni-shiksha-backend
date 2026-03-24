@@ -2,7 +2,7 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
-import redisClient from '../../config/redis';
+import { CacheService } from '../../services/cache.service';
 
 // ==========================================
 // 1. GET STUDY PLANS (Day-by-Day Syllabus)
@@ -20,12 +20,12 @@ export const getStudyPlans = async (req: Request, res: Response) => {
     }
 
     // Cache the study plan structure per exam (Cached for 1 hour)
-    const cacheKey = `study_plans:exam:${examId}`;
+    const cacheScope = `study_plans:exam:${examId}`;
     let plans;
-    const cachedPlans = await redisClient.get(cacheKey);
+    const cachedPlans = await CacheService.get<any[]>('study', cacheScope);
 
     if (cachedPlans) {
-      plans = JSON.parse(cachedPlans);
+      plans = cachedPlans;
     } else {
       plans = await prisma.studyPlan.findMany({
         where: { exam_id: examId },
@@ -36,7 +36,7 @@ export const getStudyPlans = async (req: Request, res: Response) => {
         },
         orderBy: { created_at: 'desc' }
       });
-      await redisClient.setEx(cacheKey, 3600, JSON.stringify(plans));
+      await CacheService.set('study', cacheScope, plans, 3600);
     }
 
     res.status(200).json({
@@ -72,12 +72,12 @@ export const getStudyMaterials = async (req: Request, res: Response) => {
 
     // 2. Fetch Base Materials from Redis Cache (Shared globally across all students for this exam)
     // We cache the raw database records for 1 hour
-    const cacheKey = `study_materials:exam:${examId}:subject:${subject || 'all'}`;
+    const cacheScope = `study_materials:exam:${examId}:subject:${subject || 'all'}`;
     let materials;
-    const cachedMaterials = await redisClient.get(cacheKey);
+    const cachedMaterials = await CacheService.get<any[]>('study', cacheScope);
 
     if (cachedMaterials) {
-      materials = JSON.parse(cachedMaterials);
+      materials = cachedMaterials;
     } else {
       const whereClause: any = { exam_id: examId, is_active: true };
       if (subject) whereClause.subject = subject;
@@ -86,7 +86,7 @@ export const getStudyMaterials = async (req: Request, res: Response) => {
         where: whereClause,
         orderBy: [{ is_premium: 'desc' }, { created_at: 'desc' }]
       });
-      await redisClient.setEx(cacheKey, 3600, JSON.stringify(materials));
+      await CacheService.set('study', cacheScope, materials, 3600);
     }
 
     // 3. SECURITY GATE: Apply Premium Paywall Logic IN-MEMORY

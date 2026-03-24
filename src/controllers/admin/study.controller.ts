@@ -2,6 +2,10 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
+import { CacheService } from '../../services/cache.service';
+import { QueueService } from '../../services/queue.service';
+
+const CACHE_TAG = 'study';
 
 // ==========================================
 // STUDY MATERIALS (PDFs / Video Links)
@@ -39,6 +43,9 @@ export const createStudyMaterial = async (req: Request, res: Response) => {
         details: { title }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(201).json({ message: 'Study material added successfully', data: material });
   } catch (error) {
@@ -90,6 +97,8 @@ export const updateStudyMaterial = async (req: Request, res: Response) => {
         details: { fields_updated: Object.keys(updateData) }
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Study material updated successfully', data: updatedMaterial });
   } catch (error) {
@@ -118,6 +127,9 @@ export const deleteStudyMaterial = async (req: Request, res: Response) => {
         details: { title: existingMaterial.title }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Study material deleted successfully' });
   } catch (error) {
@@ -157,6 +169,9 @@ export const createStudyPlan = async (req: Request, res: Response) => {
         details: { title }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(201).json({ message: 'Study plan created successfully', data: plan });
   } catch (error) {
@@ -212,6 +227,9 @@ export const updateStudyPlan = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(200).json({ message: 'Study plan updated successfully', data: updatedPlan });
   } catch (error) {
     console.error('Update Study Plan Error:', error);
@@ -239,6 +257,9 @@ export const deleteStudyPlan = async (req: Request, res: Response) => {
         details: { title: existingPlan.title }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Study plan deleted successfully' });
   } catch (error) {
@@ -284,6 +305,9 @@ export const addStudyPlanTask = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(201).json({ message: 'Task added to plan successfully', data: task });
   } catch (error) {
     console.error('Add Study Plan Task Error:', error);
@@ -323,6 +347,9 @@ export const updateStudyPlanTask = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(200).json({ message: 'Task updated successfully', data: updatedTask });
   } catch (error) {
     console.error('Update Study Plan Task Error:', error);
@@ -350,6 +377,9 @@ export const deleteStudyPlanTask = async (req: Request, res: Response) => {
         details: { plan_id: existingTask.study_plan_id }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ message: 'Task deleted successfully' });
   } catch (error) {

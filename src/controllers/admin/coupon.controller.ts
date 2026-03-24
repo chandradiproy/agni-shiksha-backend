@@ -3,6 +3,10 @@
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
 
+import { CacheService } from '../../services/cache.service';
+import { QueueService } from '../../services/queue.service';
+
+const CACHE_TAG = 'premium';
 // ==========================================
 // 1. CREATE COUPON
 // ==========================================
@@ -36,6 +40,8 @@ export const createCoupon = async (req: Request, res: Response) => {
         details: { code: newCoupon.code, discount_value }
       }
     });
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(201).json({ success: true, message: 'Coupon created successfully', data: newCoupon });
   } catch (error: any) {
@@ -99,6 +105,9 @@ export const updateCoupon = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(200).json({ success: true, message: 'Coupon updated successfully', data: updatedCoupon });
   } catch (error: any) {
     console.error('Update Coupon Error:', error);
@@ -141,6 +150,9 @@ export const deleteCoupon = async (req: Request, res: Response) => {
       }
     });
 
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
+
     res.status(200).json({ success: true, message: 'Coupon deleted successfully' });
   } catch (error) {
     console.error('Delete Coupon Error:', error);
@@ -175,6 +187,9 @@ export const toggleCouponStatus = async (req: Request, res: Response) => {
         details: { code: coupon.code }
       }
     });
+
+    await CacheService.invalidateTag(CACHE_TAG);
+    await QueueService.enqueueSilentSync(CACHE_TAG);
 
     res.status(200).json({ success: true, message: 'Coupon status updated', data: coupon });
   } catch (error) {

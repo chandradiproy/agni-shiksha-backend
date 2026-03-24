@@ -2,7 +2,7 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
-import redisClient from '../../config/redis';
+import { CacheService } from '../../services/cache.service';
 
 // ==========================================
 // 1. GET PAGINATED NEWS FEED
@@ -20,12 +20,12 @@ export const getArticles = async (req: Request, res: Response) => {
     }
 
     // Update cache key to include category so we don't serve "Sports" news to an "Economy" request
-    const cacheKey = `articles_feed:cat:${category || 'all'}:page:${page}:limit:${limit}`;
+    const cacheScope = `articles_feed:cat:${category || 'all'}:page:${page}:limit:${limit}`;
     
     if (page === 1) {
-      const cachedPage = await redisClient.get(cacheKey);
+      const cachedPage = await CacheService.get<any>('articles', cacheScope);
       if (cachedPage) {
-        return res.status(200).json(JSON.parse(cachedPage));
+        return res.status(200).json(cachedPage);
       }
     }
 
@@ -56,7 +56,7 @@ export const getArticles = async (req: Request, res: Response) => {
     };
 
     if (page === 1) {
-      await redisClient.setEx(cacheKey, 900, JSON.stringify(responseData));
+      await CacheService.set('articles', cacheScope, responseData, 900);
     }
 
     res.status(200).json(responseData);
@@ -75,14 +75,14 @@ export const getArticleDetails = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     // Cache individual articles heavily (they are rarely edited after publication)
-    const cacheKey = `article_detail:${id}`;
-    const cachedArticle = await redisClient.get(cacheKey);
+    const cacheScope = `article_detail:${id}`;
+    const cachedArticle = await CacheService.get<any>('articles', cacheScope);
 
     if (cachedArticle) {
-      return res.status(200).json({ success: true, data: JSON.parse(cachedArticle) });
+      return res.status(200).json({ success: true, data: cachedArticle });
     }
 
-    const article = await prisma.article.findUnique({
+    const article = await prisma.article.findFirst({
       where: { id: id as string, is_hidden: false }
     });
 
@@ -90,7 +90,7 @@ export const getArticleDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    await redisClient.setEx(cacheKey, 3600, JSON.stringify(article));
+    await CacheService.set('articles', cacheScope, article, 3600);
 
     res.status(200).json({
       success: true,

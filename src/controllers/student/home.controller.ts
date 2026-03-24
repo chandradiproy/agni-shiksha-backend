@@ -2,19 +2,23 @@
 
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
-import redisClient from '../../config/redis';
+import { CacheService } from '../../services/cache.service';
 
-// Helper function for Redis caching
-const fetchWithCache = async (key: string, ttlSeconds: number, fetcher: () => Promise<any>) => {
+const fetchWithVersionedCache = async <T>(
+  tag: string,
+  scope: string,
+  ttlSeconds: number,
+  fetcher: () => Promise<T>
+): Promise<T> => {
   try {
-    const cached = await redisClient.get(key);
-    if (cached) return JSON.parse(cached);
+    const cached = await CacheService.get<T>(tag, scope);
+    if (cached !== null) return cached;
 
     const freshData = await fetcher();
-    await redisClient.setEx(key, ttlSeconds, JSON.stringify(freshData));
+    await CacheService.set(tag, scope, freshData, ttlSeconds);
     return freshData;
   } catch (err) {
-    console.error(`Redis Cache Error for key ${key}:`, err);
+    console.error(`Versioned Cache Error for tag ${tag} scope ${scope}:`, err);
     // Fallback to database if Redis is temporarily down
     return await fetcher();
   }
@@ -108,7 +112,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       recentPerformance
     ] = await Promise.all([
       // A. Cache globally for 1 hour
-      fetchWithCache('home:daily_quizzes', 3600, () => 
+      fetchWithVersionedCache('tests', 'home:daily_quizzes', 3600, () => 
         // FIXED: Using `testSeries` instead of `test`
         prisma.testSeries.findMany({
           where: { test_type: 'DAILY_QUIZ', is_published: true },
@@ -119,7 +123,11 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       ),
 
       // B. Cache per exam category for 1 hour
-      fetchWithCache(`home:recommended_tests:${user.target_exam_id || 'all'}`, 3600, () => 
+      fetchWithVersionedCache(
+        'tests',
+        `home:recommended_tests:${user.target_exam_id || 'all'}`,
+        3600,
+        () =>
         // FIXED: Using `testSeries` instead of `test`
         prisma.testSeries.findMany({
           where: { 
@@ -135,7 +143,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       ),
 
       // C. Cache globally for 15 minutes (News updates frequently)
-      fetchWithCache('home:latest_articles', 900, () => 
+      fetchWithVersionedCache('articles', 'home:latest_articles', 900, () => 
         prisma.article.findMany({
           where: { is_hidden: false },
           take: 5,
@@ -145,7 +153,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
       ),
 
       // D. Cache individually per user for 15 minutes
-      fetchWithCache(`home:recent_performance:${userId}`, 900, () => 
+      fetchWithVersionedCache('recent-performance', `home:recent_performance:${userId}`, 900, () => 
         prisma.testAttempt.findMany({
           where: { user_id: userId, status: 'completed' }, // Status matches submission worker
           take: 3,
