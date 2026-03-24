@@ -8,6 +8,7 @@ import prisma from '../../config/db';
 import { sanitizeContent } from '../../utils/sanitizer';
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
+import { getTestSeriesMutationBlock } from '../../services/assessment-lock.service';
 
 const CACHE_TAG = 'tests';
 
@@ -134,6 +135,14 @@ export const commitBulkQuestions = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Test Series not found.' });
     }
 
+    const mutationBlock = await getTestSeriesMutationBlock(
+      testSeriesId as string,
+      'modify questions for this test series'
+    );
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
+    }
+
     const validQuestions: any[] = [];
     const finalErrors: any[] = [];
     const adminId = (req as any).admin.id;
@@ -195,6 +204,9 @@ export const commitBulkQuestions = async (req: Request, res: Response) => {
           details: { count: validQuestions.length }
         }
       });
+
+      await CacheService.invalidateTag(CACHE_TAG);
+      await QueueService.enqueueSilentSync(CACHE_TAG);
     }
 
     res.status(200).json({
@@ -236,12 +248,12 @@ export const updateQuestion = async (req: Request, res: Response) => {
     const { testSeriesId, questionId } = req.params;
     const adminId = (req as any).admin?.id as string;
 
-    // 1. Security Check: Is the Test Series locked?
-    const testSeries = await prisma.testSeries.findUnique({ where: { id: testSeriesId as string } });
-    if (!testSeries) return res.status(404).json({ error: 'Test Series not found' });
-    
-    if ((testSeries as any).is_published === true) {
-      return res.status(403).json({ error: 'Test Series is live. Cannot edit questions to preserve score integrity.' });
+    const mutationBlock = await getTestSeriesMutationBlock(
+      testSeriesId as string,
+      'modify questions for this test series'
+    );
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
     }
 
     // 2. Validate the incoming JSON using the same Zod schema from the bulk upload!
@@ -314,12 +326,12 @@ export const deleteQuestion = async (req: Request, res: Response) => {
     const { testSeriesId, questionId } = req.params;
     const adminId = (req as any).admin?.id as string;
 
-    // 1. Security Check: Is the Test Series locked?
-    const testSeries = await prisma.testSeries.findUnique({ where: { id: testSeriesId as string } });
-    if (!testSeries) return res.status(404).json({ error: 'Test Series not found' });
-    
-    if ((testSeries as any).is_published === true) {
-      return res.status(403).json({ error: 'Test Series is live. Cannot delete questions.' });
+    const mutationBlock = await getTestSeriesMutationBlock(
+      testSeriesId as string,
+      'modify questions for this test series'
+    );
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
     }
 
     // 2. Delete the Question

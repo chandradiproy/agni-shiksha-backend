@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import prisma from '../../config/db';
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
+import { getExamMutationBlock } from '../../services/assessment-lock.service';
 
 const CACHE_TAG = 'exams';
 
@@ -100,6 +101,11 @@ export const updateExam = async (req: Request, res: Response) => {
     const { id } = req.params;
     const adminId = (req as any).admin.id as string;
 
+    const mutationBlock = await getExamMutationBlock(id as string, 'update this exam');
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
+    }
+
     const updatedExam = await prisma.exam.update({
       where: { id: id as string },
       data: {...req.body, updated_by: adminId }
@@ -131,6 +137,11 @@ export const deleteExam = async (req: Request, res: Response) => {
 
     if (!id) {
       return res.status(400).json({ error: 'Exam ID is required' });
+    }
+
+    const mutationBlock = await getExamMutationBlock(id as string, 'delete this exam');
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
     }
 
     // 1. Fetch existing exam and count related test series

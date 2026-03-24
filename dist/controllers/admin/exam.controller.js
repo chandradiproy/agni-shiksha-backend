@@ -17,6 +17,7 @@ exports.deleteExam = exports.updateExam = exports.getAllExams = exports.createEx
 const db_1 = __importDefault(require("../../config/db"));
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
+const assessment_lock_service_1 = require("../../services/assessment-lock.service");
 const CACHE_TAG = 'exams';
 // Create a new Exam category (e.g., SSC CGL)
 const createExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -105,6 +106,10 @@ const updateExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { id } = req.params;
         const adminId = req.admin.id;
+        const mutationBlock = yield (0, assessment_lock_service_1.getExamMutationBlock)(id, 'update this exam');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
+        }
         const updatedExam = yield db_1.default.exam.update({
             where: { id: id },
             data: Object.assign(Object.assign({}, req.body), { updated_by: adminId })
@@ -135,6 +140,10 @@ const deleteExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
         if (!id) {
             return res.status(400).json({ error: 'Exam ID is required' });
+        }
+        const mutationBlock = yield (0, assessment_lock_service_1.getExamMutationBlock)(id, 'delete this exam');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
         }
         // 1. Fetch existing exam and count related test series
         const existingExam = yield db_1.default.exam.findUnique({

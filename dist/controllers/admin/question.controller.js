@@ -21,6 +21,7 @@ const db_1 = __importDefault(require("../../config/db"));
 const sanitizer_1 = require("../../utils/sanitizer");
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
+const assessment_lock_service_1 = require("../../services/assessment-lock.service");
 const CACHE_TAG = 'tests';
 // Zod Schema (works for both CSV strings and Frontend JSON numbers)
 const questionRowSchema = zod_1.z.object({
@@ -127,6 +128,10 @@ const commitBulkQuestions = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!testSeries) {
             return res.status(404).json({ error: 'Test Series not found.' });
         }
+        const mutationBlock = yield (0, assessment_lock_service_1.getTestSeriesMutationBlock)(testSeriesId, 'modify questions for this test series');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
+        }
         const validQuestions = [];
         const finalErrors = [];
         const adminId = req.admin.id;
@@ -182,6 +187,8 @@ const commitBulkQuestions = (req, res) => __awaiter(void 0, void 0, void 0, func
                     details: { count: validQuestions.length }
                 }
             });
+            yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
+            yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
         }
         res.status(200).json({
             message: 'Questions successfully uploaded',
@@ -220,12 +227,9 @@ const updateQuestion = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { testSeriesId, questionId } = req.params;
         const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
-        // 1. Security Check: Is the Test Series locked?
-        const testSeries = yield db_1.default.testSeries.findUnique({ where: { id: testSeriesId } });
-        if (!testSeries)
-            return res.status(404).json({ error: 'Test Series not found' });
-        if (testSeries.is_published === true) {
-            return res.status(403).json({ error: 'Test Series is live. Cannot edit questions to preserve score integrity.' });
+        const mutationBlock = yield (0, assessment_lock_service_1.getTestSeriesMutationBlock)(testSeriesId, 'modify questions for this test series');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
         }
         // 2. Validate the incoming JSON using the same Zod schema from the bulk upload!
         const validation = questionRowSchema.safeParse(req.body);
@@ -293,12 +297,9 @@ const deleteQuestion = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { testSeriesId, questionId } = req.params;
         const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
-        // 1. Security Check: Is the Test Series locked?
-        const testSeries = yield db_1.default.testSeries.findUnique({ where: { id: testSeriesId } });
-        if (!testSeries)
-            return res.status(404).json({ error: 'Test Series not found' });
-        if (testSeries.is_published === true) {
-            return res.status(403).json({ error: 'Test Series is live. Cannot delete questions.' });
+        const mutationBlock = yield (0, assessment_lock_service_1.getTestSeriesMutationBlock)(testSeriesId, 'modify questions for this test series');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
         }
         // 2. Delete the Question
         yield db_1.default.question.delete({

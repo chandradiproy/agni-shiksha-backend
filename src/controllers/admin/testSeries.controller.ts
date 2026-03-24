@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import prisma from '../../config/db';
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
+import { getTestSeriesMutationBlock } from '../../services/assessment-lock.service';
 
 const CACHE_TAG = 'tests';
 
@@ -106,6 +107,11 @@ export const updateTestSeries = async (req: Request, res: Response) => {
     const adminId = (req as any).admin?.id as string;
     const updateData = { ...req.body, updated_by: adminId }; // <-- NEW
 
+    const mutationBlock = await getTestSeriesMutationBlock(id as string, 'update this test series');
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
+    }
+
     // 1. Fetch existing test to check publication status
     const existingTest = await prisma.testSeries.findUnique({ where: { id: id as string } });
     if (!existingTest) {
@@ -167,14 +173,9 @@ export const deleteTestSeries = async (req: Request, res: Response) => {
     const { id } = req.params;
     const adminId = (req as any).admin?.id as string;
 
-    const existingTest = await prisma.testSeries.findUnique({ where: { id: id as string } });
-    if (!existingTest) return res.status(404).json({ error: 'Test Series not found' });
-
-    // VALIDATION LOCK: Do not allow deletion of published tests
-    if (existingTest.is_published === true) {
-      return res.status(403).json({ 
-        error: 'Cannot delete a live Test Series to preserve student records. Unpublish it first.' 
-      });
+    const mutationBlock = await getTestSeriesMutationBlock(id as string, 'delete this test series');
+    if (mutationBlock) {
+      return res.status(mutationBlock.status).json({ error: mutationBlock.error });
     }
 
     await prisma.testSeries.delete({

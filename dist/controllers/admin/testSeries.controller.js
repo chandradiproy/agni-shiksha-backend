@@ -17,6 +17,7 @@ exports.deleteTestSeries = exports.updateTestSeries = exports.getTestSeriesByExa
 const db_1 = __importDefault(require("../../config/db"));
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
+const assessment_lock_service_1 = require("../../services/assessment-lock.service");
 const CACHE_TAG = 'tests';
 // Create a new Test Series under an Exam
 const createTestSeries = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -106,6 +107,10 @@ const updateTestSeries = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const { id } = req.params;
         const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
         const updateData = Object.assign(Object.assign({}, req.body), { updated_by: adminId }); // <-- NEW
+        const mutationBlock = yield (0, assessment_lock_service_1.getTestSeriesMutationBlock)(id, 'update this test series');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
+        }
         // 1. Fetch existing test to check publication status
         const existingTest = yield db_1.default.testSeries.findUnique({ where: { id: id } });
         if (!existingTest) {
@@ -163,14 +168,9 @@ const deleteTestSeries = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         const { id } = req.params;
         const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
-        const existingTest = yield db_1.default.testSeries.findUnique({ where: { id: id } });
-        if (!existingTest)
-            return res.status(404).json({ error: 'Test Series not found' });
-        // VALIDATION LOCK: Do not allow deletion of published tests
-        if (existingTest.is_published === true) {
-            return res.status(403).json({
-                error: 'Cannot delete a live Test Series to preserve student records. Unpublish it first.'
-            });
+        const mutationBlock = yield (0, assessment_lock_service_1.getTestSeriesMutationBlock)(id, 'delete this test series');
+        if (mutationBlock) {
+            return res.status(mutationBlock.status).json({ error: mutationBlock.error });
         }
         yield db_1.default.testSeries.delete({
             where: { id: id }
