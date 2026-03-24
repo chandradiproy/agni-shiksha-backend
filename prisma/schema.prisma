@@ -73,6 +73,7 @@ model User {
   transactions  PaymentTransaction[] // New relation
   bookmarks    Bookmark[]
   notes        Note[]
+  student_notifications StudentNotification[]
 
   @@index([phone_number])
   @@index([xp_total(sort: Desc)])
@@ -373,6 +374,7 @@ model AdminUser {
   
   created_articles  Article[]       @relation("ArticleCreator")
   updated_articles  Article[]       @relation("ArticleUpdater")
+  notifications     Notification[]  @relation("NotificationCreator")
   
   audit_logs        AdminAuditLog[]
 
@@ -419,6 +421,48 @@ model Article {
   @@index([published_at(sort: Desc)])
   @@index([is_hidden])
   @@map("articles")
+}
+
+model Notification {
+  id             String   @id @default(uuid()) @db.Uuid
+  title          String   @db.VarChar(200)
+  body           String   @db.Text
+  type           String   @default("GENERAL") @db.VarChar(50)
+  audience_type  String   @default("ALL") @db.VarChar(30)
+  image_url      String?  @db.Text
+  deep_link      String?  @db.VarChar(500)
+  entity_type    String?  @db.VarChar(50)
+  entity_id      String?  @db.VarChar(100)
+  metadata       Json?    @default("{}")
+  created_by     String?  @db.Uuid
+  created_at     DateTime @default(now()) @db.Timestamptz
+
+  creator        AdminUser?             @relation("NotificationCreator", fields: [created_by], references: [id])
+  recipients     StudentNotification[]
+
+  @@index([created_at(sort: Desc)])
+  @@index([type])
+  @@index([audience_type])
+  @@map("notifications")
+}
+
+model StudentNotification {
+  id              String   @id @default(uuid()) @db.Uuid
+  user_id         String   @db.Uuid
+  notification_id String   @db.Uuid
+  is_read         Boolean  @default(false)
+  read_at         DateTime? @db.Timestamptz
+  delivered_at    DateTime @default(now()) @db.Timestamptz
+  created_at      DateTime @default(now()) @db.Timestamptz
+
+  user           User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  notification   Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, notification_id])
+  @@index([user_id, is_read])
+  @@index([notification_id])
+  @@index([created_at(sort: Desc)])
+  @@map("student_notifications")
 }
 
 model StudyMaterial {

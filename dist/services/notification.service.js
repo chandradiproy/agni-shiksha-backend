@@ -50,6 +50,16 @@ const admin = __importStar(require("firebase-admin"));
  * Handles both visible alerts and silent background synchronization.
  */
 class NotificationService {
+    static chunkTokens(tokens, size = 500) {
+        const chunks = [];
+        for (let index = 0; index < tokens.length; index += size) {
+            chunks.push(tokens.slice(index, index + size));
+        }
+        return chunks;
+    }
+    static getGlobalTopic() {
+        return this.GLOBAL_TOPIC;
+    }
     /**
      * Triggers a Silent Push to all devices subscribed to the global topic.
      * This wakes up the app to perform a background cache refresh.
@@ -90,20 +100,70 @@ class NotificationService {
     /**
      * Sends a standard visible notification to a topic or specific user.
      */
-    static sendAlert(title_1, body_1) {
-        return __awaiter(this, arguments, void 0, function* (title, body, topic = this.GLOBAL_TOPIC) {
-            const message = {
-                notification: { title, body },
-                topic: topic,
-            };
+    static sendAlert(payload) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { title, body, topic = this.GLOBAL_TOPIC, tokens = [], data, imageUrl, } = payload;
+            const uniqueTokens = [...new Set(tokens.filter(Boolean))];
             try {
+                if (uniqueTokens.length > 0) {
+                    for (const chunk of this.chunkTokens(uniqueTokens)) {
+                        const response = yield admin.messaging().sendEachForMulticast({
+                            tokens: chunk,
+                            notification: { title, body, imageUrl },
+                            data,
+                            android: {
+                                priority: 'high',
+                                notification: imageUrl ? { imageUrl } : undefined,
+                            },
+                            apns: imageUrl
+                                ? {
+                                    fcmOptions: {
+                                        imageUrl,
+                                    },
+                                }
+                                : undefined,
+                        });
+                        if (response.failureCount > 0) {
+                            console.error('[FCM Alert Warning] Some multicast notifications failed to send.', {
+                                successCount: response.successCount,
+                                failureCount: response.failureCount,
+                            });
+                        }
+                    }
+                    return;
+                }
+                const message = {
+                    notification: { title, body, imageUrl },
+                    data,
+                    topic,
+                };
                 yield admin.messaging().send(message);
             }
             catch (error) {
-                console.error("FCM Alert Error:", error);
+                console.error('FCM Alert Error:', error);
+            }
+        });
+    }
+    static subscribeTokenToGlobalTopic(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield admin.messaging().subscribeToTopic([token], this.GLOBAL_TOPIC);
+            }
+            catch (error) {
+                console.error('FCM Subscribe Error:', error);
+            }
+        });
+    }
+    static unsubscribeTokenFromGlobalTopic(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield admin.messaging().unsubscribeFromTopic([token], this.GLOBAL_TOPIC);
+            }
+            catch (error) {
+                console.error('FCM Unsubscribe Error:', error);
             }
         });
     }
 }
 exports.NotificationService = NotificationService;
-NotificationService.GLOBAL_TOPIC = "global_updates";
+NotificationService.GLOBAL_TOPIC = 'global_updates';

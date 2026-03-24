@@ -17,6 +17,7 @@ import adminAuditRoutes from './routes/admin/audit.routes'; // <-- Import Audit
 import adminPlanRoutes from './routes/admin/plan.routes'; // <-- Import Plan Management Routes
 import adminFinancialRoutes from './routes/admin/financial.routes';
 import adminCouponRoutes from './routes/admin/coupon.routes'; // <-- Import Coupon Routes
+import adminNotificationRoutes from './routes/admin/notification.routes';
 
 import adminAuthRoutes from './routes/adminAuth.routes';
 import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
@@ -29,9 +30,12 @@ import socialRoutes from './routes/student/social.routes';
 import premiumRoutes from './routes/student/premium.routes';
 import utilityRoutes from './routes/student/utility.routes';
 import homeRoutes from './routes/student/home.routes';
+import studentNotificationRoutes from './routes/student/notification.routes';
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 import { schedulePremiumExpirer } from './corn/premiumExperier'; // <-- Import Premium Expirer Cron Job
+import initializeFirebase from './config/firebase';
+import './workers/notification.worker';
 
 dotenv.config();
 
@@ -57,6 +61,7 @@ app.use('/api/v1/admin/audit', adminAuditRoutes);
 app.use('/api/v1/admin/plans', adminPlanRoutes); // <-- Mount Plan Management Routes
 app.use('/api/v1/admin/financial', adminFinancialRoutes); // <-- Mount Financial Routes
 app.use('/api/v1/admin/coupons', adminCouponRoutes);
+app.use('/api/v1/admin/notifications', adminNotificationRoutes);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
@@ -69,6 +74,7 @@ app.use('/api/v1/student/social', socialRoutes);
 app.use('/api/v1/student/premium', premiumRoutes);
 app.use('/api/v1/student/utilities', utilityRoutes);
 app.use('/api/v1/student/home', homeRoutes);
+app.use('/api/v1/student/notifications', studentNotificationRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {
@@ -82,7 +88,8 @@ schedulePremiumExpirer(); // Start the cron job to expire premium subscriptions
 const startServer = async () => {
   try {
     // Initialize Redis first using the dynamic multi-provider setup
-    await initializeRedis(); 
+    await initializeRedis();
+    initializeFirebase();
     
     // Start Express only after Redis successfully connects
     app.listen(PORT, () => {

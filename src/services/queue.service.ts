@@ -4,6 +4,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+export type AlertQueuePayload = {
+  title: string;
+  body: string;
+  topic?: string;
+  tokens?: string[];
+  data?: Record<string, string>;
+  imageUrl?: string;
+};
+
 /**
  * BullMQ requires an 'ioredis' compatible connection.
  * We use the standard REDIS_URL environment variable here.
@@ -43,7 +52,7 @@ export class QueueService {
   /**
    * Enqueues a standard visible alert push notification.
    */
-  static async enqueueAlert(title: string, body: string, topic?: string) {
-    await notificationQueue.add('alert-push', { title, body, topic });
+  static async enqueueAlert(payload: AlertQueuePayload) {
+    await notificationQueue.add('alert-push', payload);
   }
 }

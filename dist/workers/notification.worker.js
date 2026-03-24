@@ -16,8 +16,10 @@ exports.notificationWorker = void 0;
 // src/workers/notification.worker.ts
 const bullmq_1 = require("bullmq");
 const notification_service_1 = require("../services/notification.service");
+const firebase_1 = __importDefault(require("../config/firebase"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+(0, firebase_1.default)();
 const connection = {
     url: process.env.REDIS_URL,
 };
@@ -36,9 +38,9 @@ exports.notificationWorker = new bullmq_1.Worker('notification-queue', (job) => 
             console.log(`[Worker] Successfully dispatched silent-sync for tag: ${tag}`);
         }
         else if (job.name === 'alert-push') {
-            const { title, body, topic } = job.data;
-            yield notification_service_1.NotificationService.sendAlert(title, body, topic);
-            console.log(`[Worker] Successfully dispatched alert-push: ${title}`);
+            const { title, body } = job.data;
+            yield notification_service_1.NotificationService.sendAlert(job.data);
+            console.log(`[Worker] Successfully dispatched alert-push: ${title} - ${body}`);
         }
     }
     catch (error) {

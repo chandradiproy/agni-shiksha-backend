@@ -31,6 +31,7 @@ const audit_routes_1 = __importDefault(require("./routes/admin/audit.routes")); 
 const plan_routes_1 = __importDefault(require("./routes/admin/plan.routes")); // <-- Import Plan Management Routes
 const financial_routes_1 = __importDefault(require("./routes/admin/financial.routes"));
 const coupon_routes_1 = __importDefault(require("./routes/admin/coupon.routes")); // <-- Import Coupon Routes
+const notification_routes_1 = __importDefault(require("./routes/admin/notification.routes"));
 const adminAuth_routes_1 = __importDefault(require("./routes/adminAuth.routes"));
 const test_routes_1 = __importDefault(require("./routes/student/test.routes")); // <-- Import Student Routes
 const dashboard_routes_2 = __importDefault(require("./routes/student/dashboard.routes")); // <-- Import Student Dashboard Routes
@@ -42,8 +43,11 @@ const social_routes_1 = __importDefault(require("./routes/student/social.routes"
 const premium_routes_1 = __importDefault(require("./routes/student/premium.routes"));
 const utility_routes_1 = __importDefault(require("./routes/student/utility.routes"));
 const home_routes_1 = __importDefault(require("./routes/student/home.routes"));
+const notification_routes_2 = __importDefault(require("./routes/student/notification.routes"));
 const newsAggregator_1 = require("./corn/newsAggregator"); // <-- Import Cron Job init
 const premiumExperier_1 = require("./corn/premiumExperier"); // <-- Import Premium Expirer Cron Job
+const firebase_1 = __importDefault(require("./config/firebase"));
+require("./workers/notification.worker");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
@@ -65,6 +69,7 @@ app.use('/api/v1/admin/audit', audit_routes_1.default);
 app.use('/api/v1/admin/plans', plan_routes_1.default); // <-- Mount Plan Management Routes
 app.use('/api/v1/admin/financial', financial_routes_1.default); // <-- Mount Financial Routes
 app.use('/api/v1/admin/coupons', coupon_routes_1.default);
+app.use('/api/v1/admin/notifications', notification_routes_1.default);
 app.use('/api/v1/auth', auth_routes_1.default);
 app.use('/api/v1/student/tests', test_routes_1.default); // <-- Mount Student Routes
 app.use('/api/v1/student/dashboard', dashboard_routes_2.default); // <-- Mount Student Dashboard Routes
@@ -76,6 +81,7 @@ app.use('/api/v1/student/social', social_routes_1.default);
 app.use('/api/v1/student/premium', premium_routes_1.default);
 app.use('/api/v1/student/utilities', utility_routes_1.default);
 app.use('/api/v1/student/home', home_routes_1.default);
+app.use('/api/v1/student/notifications', notification_routes_2.default);
 // Health Check Route
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'Agni Shiksha API is running', timestamp: new Date() });
@@ -87,6 +93,7 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Initialize Redis first using the dynamic multi-provider setup
         yield (0, redis_1.initializeRedis)();
+        (0, firebase_1.default)();
         // Start Express only after Redis successfully connects
         app.listen(PORT, () => {
             console.log(`Server is running on http://localhost:${PORT}`);

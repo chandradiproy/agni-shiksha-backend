@@ -55,9 +55,9 @@ class QueueService {
     /**
      * Enqueues a standard visible alert push notification.
      */
-    static enqueueAlert(title, body, topic) {
+    static enqueueAlert(payload) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield exports.notificationQueue.add('alert-push', { title, body, topic });
+            yield exports.notificationQueue.add('alert-push', payload);
         });
     }
 }
