@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import prisma from '../../config/db';
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
+import { broadcastCacheInvalidation } from '../../utils/broadcast';
 
 const CACHE_TAG = 'study';
 
@@ -46,6 +47,7 @@ export const createStudyMaterial = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(201).json({ message: 'Study material added successfully', data: material });
   } catch (error) {
@@ -99,6 +101,7 @@ export const updateStudyMaterial = async (req: Request, res: Response) => {
     });
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Study material updated successfully', data: updatedMaterial });
   } catch (error) {
@@ -130,6 +133,7 @@ export const deleteStudyMaterial = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Study material deleted successfully' });
   } catch (error) {
@@ -172,6 +176,7 @@ export const createStudyPlan = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(201).json({ message: 'Study plan created successfully', data: plan });
   } catch (error) {
@@ -229,6 +234,7 @@ export const updateStudyPlan = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Study plan updated successfully', data: updatedPlan });
   } catch (error) {
@@ -260,6 +266,7 @@ export const deleteStudyPlan = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Study plan deleted successfully' });
   } catch (error) {
@@ -307,6 +314,7 @@ export const addStudyPlanTask = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(201).json({ message: 'Task added to plan successfully', data: task });
   } catch (error) {
@@ -349,6 +357,7 @@ export const updateStudyPlanTask = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Task updated successfully', data: updatedTask });
   } catch (error) {
@@ -380,6 +389,7 @@ export const deleteStudyPlanTask = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Task deleted successfully' });
   } catch (error) {

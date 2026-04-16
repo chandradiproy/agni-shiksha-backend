@@ -17,6 +17,7 @@ exports.deleteTestSeries = exports.updateTestSeries = exports.getTestSeriesByExa
 const db_1 = __importDefault(require("../../config/db"));
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
+const broadcast_1 = require("../../utils/broadcast");
 const assessment_lock_service_1 = require("../../services/assessment-lock.service");
 const CACHE_TAG = 'tests';
 // Create a new Test Series under an Exam
@@ -154,6 +155,7 @@ const updateTestSeries = (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Test Series updated successfully', testSeries: updatedTestSeries });
     }
     catch (error) {
@@ -185,6 +187,7 @@ const deleteTestSeries = (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Test Series deleted successfully' });
     }
     catch (error) {

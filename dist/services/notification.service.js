@@ -113,7 +113,7 @@ class NotificationService {
                             data,
                             android: {
                                 priority: 'high',
-                                notification: imageUrl ? { imageUrl } : undefined,
+                                notification: Object.assign({ channelId: 'high_priority', sound: 'default' }, (imageUrl ? { imageUrl } : {})),
                             },
                             apns: imageUrl
                                 ? {

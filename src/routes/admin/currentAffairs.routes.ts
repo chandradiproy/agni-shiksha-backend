@@ -6,8 +6,9 @@ import {
   triggerNewsSync, 
   getAdminArticles, 
   updateArticleStatus,
-  createCustomArticle, // <-- Import new
-  deleteArticle        // <-- Import new
+  createCustomArticle,
+  editCustomArticle, // <-- Import new edit function
+  deleteArticle
 } from '../../controllers/admin/currentAffairs.controller';
 
 const router = Router();
@@ -23,6 +24,9 @@ router.put('/:id/status', requireAdmin, updateArticleStatus);
 
 // Create a manual custom article natively
 router.post('/custom', requireAdmin, createCustomArticle);
+
+// Edit an existing custom article natively
+router.put('/:id', requireAdmin, editCustomArticle);
 
 // Delete an article entirely
 router.delete('/:id', requireAdmin, deleteArticle);

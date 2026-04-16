@@ -5,6 +5,8 @@ import prisma from '../../config/db';
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
 import { getExamMutationBlock } from '../../services/assessment-lock.service';
+import { broadcastCacheInvalidation } from '../../utils/broadcast';
+import { NotificationCenterService } from '../../services/notification-center.service';
 
 const CACHE_TAG = 'exams';
 
@@ -44,6 +46,18 @@ export const createExam = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+
+    broadcastCacheInvalidation(CACHE_TAG);
+
+    // Auto-Alert Push
+    await NotificationCenterService.createAdminNotification({
+      adminId,
+      title: 'New Exam Launched!',
+      body: `${newExam.name} is now available.`,
+      type: 'MARKETING',
+      audienceType: 'ALL',
+      sendPush: true,
+    }).catch(err => console.error('Auto-Alert Push Error:', err));
 
     res.status(201).json({ message: 'Exam created successfully', exam: newExam });
   } catch (error: any) {

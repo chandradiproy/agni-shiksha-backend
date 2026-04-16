@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toggleForumBan = exports.toggleBanStudent = exports.getAllStudents = void 0;
+exports.revokeAllUserSessions = exports.toggleForumBan = exports.toggleBanStudent = exports.getAllStudents = void 0;
 const db_1 = __importDefault(require("../../config/db"));
 // Get all students (with optional search and pagination)
 const getAllStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -143,3 +143,37 @@ const toggleForumBan = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.toggleForumBan = toggleForumBan;
+// Revoke ALL active JWT Refresh Token Sessions globally for a compromised user
+const revokeAllUserSessions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { id } = req.params;
+        const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
+        const user = yield db_1.default.user.findUnique({ where: { id: id } });
+        if (!user)
+            return res.status(404).json({ error: 'Student not found' });
+        // Hardware/Token Security: Forcefully expire all sessions in the DB
+        const deletedSessions = yield db_1.default.userSession.deleteMany({
+            where: { user_id: id }
+        });
+        // Optional Security Measure: Nullify FCM Token arrays if needed
+        // await prisma.user.update({ where: { id }, data: { device_tokens: [] } });
+        // Audit Log
+        yield db_1.default.adminAuditLog.create({
+            data: {
+                admin_id: adminId,
+                action: 'REVOKED_SESSIONS',
+                target_id: id,
+                details: { sessions_terminated: deletedSessions.count }
+            }
+        });
+        res.status(200).json({
+            message: `Successfully revoked ${deletedSessions.count} active sessions for this student. They will be logged out globally.`
+        });
+    }
+    catch (error) {
+        console.error('Revoke Sessions Error:', error);
+        res.status(500).json({ error: 'Failed to globally revoke user sessions.' });
+    }
+});
+exports.revokeAllUserSessions = revokeAllUserSessions;

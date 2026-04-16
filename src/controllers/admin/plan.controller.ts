@@ -5,6 +5,8 @@ import prisma from '../../config/db';
 
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
+import { broadcastCacheInvalidation } from '../../utils/broadcast';
+import { NotificationCenterService } from '../../services/notification-center.service';
 const CACHE_TAG = 'premium';
 
 // ==========================================
@@ -42,6 +44,17 @@ export const createPlan = async (req: Request, res: Response) => {
     });
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
+
+    // Auto-Alert Push
+    await NotificationCenterService.createAdminNotification({
+      adminId,
+      title: 'New Premium Plan!',
+      body: `Checkout our new subscription plan: ${newPlan.name}`,
+      type: 'MARKETING',
+      audienceType: 'ALL',
+      sendPush: true,
+    }).catch(err => console.error('Auto-Alert Push Error:', err));
 
     res.status(201).json({ success: true, message: 'Plan created successfully', data: newPlan });
   } catch (error: any) {
@@ -106,6 +119,7 @@ export const updatePlan = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ success: true, message: 'Plan updated successfully', data: updatedPlan });
   } catch (error) {
@@ -158,6 +172,7 @@ export const deletePlan = async (req: Request, res: Response) => {
 
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ success: true, message: 'Plan deleted successfully' });
   } catch (error) {

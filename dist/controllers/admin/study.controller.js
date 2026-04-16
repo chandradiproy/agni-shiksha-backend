@@ -17,6 +17,7 @@ exports.deleteStudyPlanTask = exports.updateStudyPlanTask = exports.addStudyPlan
 const db_1 = __importDefault(require("../../config/db"));
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
+const broadcast_1 = require("../../utils/broadcast");
 const CACHE_TAG = 'study';
 // ==========================================
 // STUDY MATERIALS (PDFs / Video Links)
@@ -53,6 +54,7 @@ const createStudyMaterial = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(201).json({ message: 'Study material added successfully', data: material });
     }
     catch (error) {
@@ -101,6 +103,7 @@ const updateStudyMaterial = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Study material updated successfully', data: updatedMaterial });
     }
     catch (error) {
@@ -130,6 +133,7 @@ const deleteStudyMaterial = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Study material deleted successfully' });
     }
     catch (error) {
@@ -168,6 +172,7 @@ const createStudyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(201).json({ message: 'Study plan created successfully', data: plan });
     }
     catch (error) {
@@ -219,6 +224,7 @@ const updateStudyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Study plan updated successfully', data: updatedPlan });
     }
     catch (error) {
@@ -248,6 +254,7 @@ const deleteStudyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Study plan deleted successfully' });
     }
     catch (error) {
@@ -291,6 +298,7 @@ const addStudyPlanTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(201).json({ message: 'Task added to plan successfully', data: task });
     }
     catch (error) {
@@ -330,6 +338,7 @@ const updateStudyPlanTask = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Task updated successfully', data: updatedTask });
     }
     catch (error) {
@@ -359,6 +368,7 @@ const deleteStudyPlanTask = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ message: 'Task deleted successfully' });
     }
     catch (error) {

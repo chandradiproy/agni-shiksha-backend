@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import prisma from '../../config/db';
 import { CacheService } from '../../services/cache.service';
 import { QueueService } from '../../services/queue.service';
+import { broadcastCacheInvalidation } from '../../utils/broadcast';
 import { getTestSeriesMutationBlock } from '../../services/assessment-lock.service';
 
 const CACHE_TAG = 'tests';
@@ -159,6 +160,7 @@ export const updateTestSeries = async (req: Request, res: Response) => {
     });
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
 
     res.status(200).json({ message: 'Test Series updated successfully', testSeries: updatedTestSeries });
   } catch (error) {
@@ -192,6 +194,7 @@ export const deleteTestSeries = async (req: Request, res: Response) => {
     });
     await CacheService.invalidateTag(CACHE_TAG);
     await QueueService.enqueueSilentSync(CACHE_TAG);
+    broadcastCacheInvalidation(CACHE_TAG);
     
     res.status(200).json({ message: 'Test Series deleted successfully' });
   } catch (error) {

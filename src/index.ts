@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import { initializeRedis } from './config/redis'; // Imports from src/config/redis/index.ts
 import authRoutes from './routes/auth.routes';
 import contentRoutes from './routes/admin/content.routes'; // Import content routes
@@ -31,6 +32,7 @@ import premiumRoutes from './routes/student/premium.routes';
 import utilityRoutes from './routes/student/utility.routes';
 import homeRoutes from './routes/student/home.routes';
 import studentNotificationRoutes from './routes/student/notification.routes';
+import studentOnboardingRoutes from './routes/student/onboarding.routes'; // <-- Import Onboarding Routes
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 import { schedulePremiumExpirer } from './corn/premiumExperier'; // <-- Import Premium Expirer Cron Job
@@ -43,7 +45,17 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Middleware
-app.use(cors());
+// Rate limiter
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 500, message: { error: 'Too many requests' } });
+
+const corsOptions = {
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081', 'exp://127.0.0.1:8081'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+app.use(apiLimiter);
 app.use(express.json()); // Parses incoming JSON requests
 app.use(morgan('dev')); // Logs API requests, methods, and status codes to the terminal
 
@@ -75,6 +87,8 @@ app.use('/api/v1/student/premium', premiumRoutes);
 app.use('/api/v1/student/utilities', utilityRoutes);
 app.use('/api/v1/student/home', homeRoutes);
 app.use('/api/v1/student/notifications', studentNotificationRoutes);
+
+app.use('/api/v1/onboarding', studentOnboardingRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {

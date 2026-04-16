@@ -43,7 +43,7 @@ const requestAdminOtp = (req, res) => __awaiter(void 0, void 0, void 0, function
         // Save to Redis (5 mins)
         yield redis_1.default.setEx(`admin_otp:${email}`, 300, otp);
         // Send email via Nodemailer
-        yield (0, mailer_1.sendOTP)(email, otp);
+        yield (0, mailer_1.sendEmailOTP)(email, otp);
         res.status(200).json({ message: 'Admin OTP sent successfully' });
     }
     catch (error) {

@@ -11,6 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNotifications = exports.createNotification = void 0;
 const notification_center_service_1 = require("../../services/notification-center.service");
+const cache_service_1 = require("../../services/cache.service");
+const broadcast_1 = require("../../utils/broadcast");
 const createNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const adminId = req.admin.id;
@@ -33,6 +35,9 @@ const createNotification = (req, res) => __awaiter(void 0, void 0, void 0, funct
             targetExamId: typeof target_exam_id === 'string' ? target_exam_id : undefined,
             sendPush: send_push === undefined ? true : Boolean(send_push),
         });
+        // Invalidate student notification caches and broadcast to mobile clients
+        yield cache_service_1.CacheService.invalidateTag('notifications');
+        (0, broadcast_1.broadcastCacheInvalidation)('notifications');
         res.status(201).json({
             success: true,
             message: 'Notification created successfully',

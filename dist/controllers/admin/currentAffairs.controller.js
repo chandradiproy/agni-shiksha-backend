@@ -13,9 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteArticle = exports.createCustomArticle = exports.updateArticleStatus = exports.getAdminArticles = exports.triggerNewsSync = void 0;
+exports.deleteArticle = exports.editCustomArticle = exports.createCustomArticle = exports.updateArticleStatus = exports.getAdminArticles = exports.triggerNewsSync = void 0;
 const db_1 = __importDefault(require("../../config/db"));
 const newsService_1 = require("../../services/newsService");
+const cache_service_1 = require("../../services/cache.service");
+const broadcast_1 = require("../../utils/broadcast");
 // 1. Manually trigger the news sync
 const triggerNewsSync = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -31,6 +33,10 @@ const triggerNewsSync = (req, res) => __awaiter(void 0, void 0, void 0, function
                 data: { admin_id: adminId, action: 'TRIGGERED_NEWS_SYNC', target_id: adminId }
             });
         }
+        // 🔴 CRITICAL: Invalidate the Redis cache immediately and push signal to phones!
+        yield cache_service_1.CacheService.invalidateTag('articles');
+        yield cache_service_1.CacheService.invalidateTag('dashboard_home');
+        (0, broadcast_1.broadcastCacheInvalidation)('articles');
         res.status(200).json({ message: 'News sync completed successfully', data: result });
     }
     catch (error) {
@@ -91,6 +97,10 @@ const updateArticleStatus = (req, res) => __awaiter(void 0, void 0, void 0, func
                 details: { is_hidden, is_pinned }
             }
         });
+        // 🔴 Invalidate cache globally
+        yield cache_service_1.CacheService.invalidateTag('articles');
+        yield cache_service_1.CacheService.invalidateTag('dashboard_home');
+        (0, broadcast_1.broadcastCacheInvalidation)('articles');
         res.status(200).json({ message: 'Article status updated', article: updatedArticle });
     }
     catch (error) {
@@ -131,6 +141,10 @@ const createCustomArticle = (req, res) => __awaiter(void 0, void 0, void 0, func
                 details: { title }
             }
         });
+        // 🔴 Invalidate cache globally
+        yield cache_service_1.CacheService.invalidateTag('articles');
+        yield cache_service_1.CacheService.invalidateTag('dashboard_home');
+        (0, broadcast_1.broadcastCacheInvalidation)('articles');
         res.status(201).json({ message: 'Custom article created successfully', data: article });
     }
     catch (error) {
@@ -139,21 +153,77 @@ const createCustomArticle = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.createCustomArticle = createCustomArticle;
+// 4.5. Edit a Custom Article (Admin Manual Entry Update)
+const editCustomArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { id } = req.params;
+        const { title, summary, content, source_name, image_url, is_pinned } = req.body;
+        const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
+        const existingArticle = yield db_1.default.article.findUnique({ where: { id: id } });
+        if (!existingArticle) {
+            return res.status(404).json({ error: 'Article not found' });
+        }
+        // Only allow full text edits for custom (manually created) articles to prevent over-writing syncs
+        if (!existingArticle.is_custom) {
+            return res.status(400).json({ error: 'Cannot edit full content of auto-synced articles natively. Only status updates are permitted.' });
+        }
+        const updatedArticle = yield db_1.default.article.update({
+            where: { id: id },
+            data: {
+                title: title || existingArticle.title,
+                summary: summary !== undefined ? summary : existingArticle.summary,
+                content: content || existingArticle.content,
+                source_name: source_name || existingArticle.source_name,
+                image_url: image_url !== undefined ? image_url : existingArticle.image_url,
+                is_pinned: is_pinned !== undefined ? is_pinned : existingArticle.is_pinned,
+                updated_by: adminId
+            }
+        });
+        // Audit Log
+        yield db_1.default.adminAuditLog.create({
+            data: {
+                admin_id: adminId,
+                action: 'EDITED_ARTICLE',
+                target_id: updatedArticle.id,
+                details: { title: updatedArticle.title }
+            }
+        });
+        // 🔴 Invalidate cache globally
+        yield cache_service_1.CacheService.invalidateTag('articles');
+        yield cache_service_1.CacheService.invalidateTag('dashboard_home');
+        (0, broadcast_1.broadcastCacheInvalidation)('articles');
+        res.status(200).json({ message: 'Custom article updated successfully', data: updatedArticle });
+    }
+    catch (error) {
+        console.error('Edit Custom Article Error:', error);
+        res.status(500).json({ error: 'Failed to edit custom article' });
+    }
+});
+exports.editCustomArticle = editCustomArticle;
 // 5. Delete an Article (Remove spam or mistakes)
 const deleteArticle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const { id } = req.params;
         const adminId = (_a = req.admin) === null || _a === void 0 ? void 0 : _a.id;
+        const article = yield db_1.default.article.findUnique({ where: { id: id } });
+        const article_title = article === null || article === void 0 ? void 0 : article.title;
+        const source_url = article === null || article === void 0 ? void 0 : article.source_url;
         yield db_1.default.article.delete({ where: { id: id } });
         // Audit Log
         yield db_1.default.adminAuditLog.create({
             data: {
                 admin_id: adminId,
                 action: 'DELETED_ARTICLE',
-                target_id: id
+                target_id: id,
+                details: { "title": article_title, "url": source_url }
             }
         });
+        // 🔴 Invalidate cache globally
+        yield cache_service_1.CacheService.invalidateTag('articles');
+        yield cache_service_1.CacheService.invalidateTag('dashboard_home');
+        (0, broadcast_1.broadcastCacheInvalidation)('articles');
         res.status(200).json({ message: 'Article deleted successfully' });
     }
     catch (error) {

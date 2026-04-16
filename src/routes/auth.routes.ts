@@ -1,6 +1,8 @@
 // src/routes/auth.routes.ts
 
 import { Router } from 'express';
+import { CacheService } from '../services/cache.service';
+import redisClient from '../config/redis';
 import {
   requestOtp,
   verifyOtp,
@@ -15,6 +17,8 @@ import {
   forgotPassword,
   resetPassword,
   deleteAccount,
+  updateFcmToken,
+  testPushNotification
 } from '../controllers/auth.controller';
 
 import{  getLoginOptions,
@@ -74,6 +78,18 @@ router.post('/logout', requireAuth, logout);
 router.post('/logout-all', requireAuth, logoutAll);
 router.get('/me', requireAuth, getMe);
 router.put('/me', requireAuth, validate(updateProfileSchema), updateMe);
+router.put('/me/fcm-token', requireAuth, updateFcmToken);
 router.delete('/account', requireAuth, validate(deleteAccountSchema), deleteAccount);
+
+// ==========================================
+// TEMPORARY CACHE TESTING ROUTE
+// ==========================================
+router.post('/test-push', testPushNotification);
+router.get('/test-invalidation', async (req, res) => {
+  const oldV = await redisClient.get('cache_v:articles');
+  await CacheService.invalidateTag('articles');
+  const newV = await redisClient.get('cache_v:articles');
+  res.json({ oldVersion: oldV || '1', newVersion: newV, message: 'Articles cache successfully purged!' });
+});
 
 export default router;

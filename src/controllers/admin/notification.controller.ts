@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { NotificationCenterService } from '../../services/notification-center.service';
+import { CacheService } from '../../services/cache.service';
+import { broadcastCacheInvalidation } from '../../utils/broadcast';
 
 export const createNotification = async (req: Request, res: Response) => {
   try {
@@ -38,6 +40,10 @@ export const createNotification = async (req: Request, res: Response) => {
       targetExamId: typeof target_exam_id === 'string' ? target_exam_id : undefined,
       sendPush: send_push === undefined ? true : Boolean(send_push),
     });
+
+    // Invalidate student notification caches and broadcast to mobile clients
+    await CacheService.invalidateTag('notifications');
+    broadcastCacheInvalidation('notifications');
 
     res.status(201).json({
       success: true,

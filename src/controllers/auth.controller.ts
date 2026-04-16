@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import * as admin from 'firebase-admin';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'fallback_access_secret';
@@ -600,5 +601,69 @@ export const deleteAccount = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Delete Account Error:', error);
     res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
+// ==========================================
+// 14. PUSH NOTIFICATIONS (FCM)
+// ==========================================
+export const updateFcmToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    const userId = (req as any).user.id;
+    if (!token) return res.status(400).json({ error: 'FCM token required' });
+
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { device_tokens: true } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    let tokens = (user.device_tokens as string[]) || [];
+    if (!tokens.includes(token)) {
+      tokens.push(token);
+    }
+
+    if (tokens.length > 5) tokens = tokens.slice(tokens.length - 5);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { device_tokens: tokens }
+    });
+
+    res.json({ success: true, message: 'FCM token registered' });
+  } catch (err) {
+    console.error('Update FCM Token error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const testPushNotification = async (req: Request, res: Response) => {
+  try {
+    const { pushType, userId } = req.body; 
+    if (!pushType || !userId) return res.status(400).json({ error: 'pushType and userId required' });
+
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { device_tokens: true } });
+    if (!user || !user.device_tokens || (user.device_tokens as string[]).length === 0) {
+      return res.status(400).json({ error: 'User has no registered FCM tokens' });
+    }
+
+    const tokens = user.device_tokens as string[];
+
+    const message: admin.messaging.MulticastMessage = {
+      tokens,
+      data: {
+        type: pushType === 'silent' ? 'CACHE_INVALIDATE' : 'INFO',
+        target: 'home_dashboard'
+      },
+      notification: pushType === 'alert' ? {
+        title: 'New Content Arrived! 🎉',
+        body: 'Pull to refresh or tap to view the latest recommended tests.'
+      } : undefined,
+      android: { priority: 'high' }
+    };
+
+    const response = await admin.messaging().sendEachForMulticast(message);
+    res.json({ success: true, response, message: `Sent ${pushType} push to ${tokens.length} devices.` });
+  } catch (err) {
+    console.error('Test Push Error:', err);
+    res.status(500).json({ error: 'Failed to send test push.' });
   }
 };

@@ -18,6 +18,8 @@ const db_1 = __importDefault(require("../../config/db"));
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
 const assessment_lock_service_1 = require("../../services/assessment-lock.service");
+const broadcast_1 = require("../../utils/broadcast");
+const notification_center_service_1 = require("../../services/notification-center.service");
 const CACHE_TAG = 'exams';
 // Create a new Exam category (e.g., SSC CGL)
 const createExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -51,6 +53,16 @@ const createExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
+        // Auto-Alert Push
+        yield notification_center_service_1.NotificationCenterService.createAdminNotification({
+            adminId,
+            title: 'New Exam Launched!',
+            body: `${newExam.name} is now available.`,
+            type: 'MARKETING',
+            audienceType: 'ALL',
+            sendPush: true,
+        }).catch(err => console.error('Auto-Alert Push Error:', err));
         res.status(201).json({ message: 'Exam created successfully', exam: newExam });
     }
     catch (error) {

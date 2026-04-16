@@ -41,9 +41,11 @@ const getAvailableTests = (req, res) => __awaiter(void 0, void 0, void 0, functi
         };
         if (examId)
             whereClause.exam_id = examId;
-        if (type)
-            whereClause.type = type;
-        const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type || 'all'}:page:${page}:limit:${limit}`;
+        if (type) {
+            const upperType = type.toUpperCase();
+            whereClause.type = upperType;
+        }
+        const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type ? type.toUpperCase() : 'all'}:page:${page}:limit:${limit}`;
         const cachedResponse = yield cache_service_1.CacheService.get('tests', cacheScope);
         if (cachedResponse) {
             return res.status(200).json(cachedResponse);

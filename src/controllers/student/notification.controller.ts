@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { NotificationCenterService } from '../../services/notification-center.service';
+import { CacheService } from '../../services/cache.service';
+
+const CACHE_TAG = 'notifications';
 
 export const getMyNotifications = async (req: Request, res: Response) => {
   try {
@@ -8,6 +11,14 @@ export const getMyNotifications = async (req: Request, res: Response) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const unreadOnly = req.query.unreadOnly === 'true';
 
+    const cacheScope = `inbox:${userId}:p${page}:l${limit}:u${unreadOnly}`;
+    const cached = await CacheService.get<any>(CACHE_TAG, cacheScope);
+    if (cached) {
+      console.log(`[NotifCache] HIT for ${cacheScope}`);
+      return res.status(200).json(cached);
+    }
+    console.log(`[NotifCache] MISS for ${cacheScope}`);
+
     const result = await NotificationCenterService.getStudentInbox({
       userId,
       page,
@@ -15,7 +26,7 @@ export const getMyNotifications = async (req: Request, res: Response) => {
       unreadOnly,
     });
 
-    res.status(200).json({
+    const payload = {
       success: true,
       data: result.items,
       pagination: {
@@ -25,7 +36,12 @@ export const getMyNotifications = async (req: Request, res: Response) => {
         totalPages: result.totalPages,
       },
       unread_count: result.unreadCount,
-    });
+    };
+
+    // Cache for 5 minutes — invalidated on read/mark actions & new notifications
+    await CacheService.set(CACHE_TAG, cacheScope, payload, 300);
+
+    res.status(200).json(payload);
   } catch (error) {
     console.error('Get My Notifications Error:', error);
     res.status(500).json({ error: 'Failed to fetch notifications' });
@@ -36,6 +52,14 @@ export const getUnreadNotificationCount = async (req: Request, res: Response) =>
   try {
     const userId = (req as any).user.id as string;
 
+    const cacheScope = `unread:${userId}`;
+    const cached = await CacheService.get<any>(CACHE_TAG, cacheScope);
+    if (cached) {
+      console.log(`[NotifCache] HIT for ${cacheScope}`);
+      return res.status(200).json(cached);
+    }
+    console.log(`[NotifCache] MISS for ${cacheScope}`);
+
     const result = await NotificationCenterService.getStudentInbox({
       userId,
       page: 1,
@@ -43,10 +67,14 @@ export const getUnreadNotificationCount = async (req: Request, res: Response) =>
       unreadOnly: false,
     });
 
-    res.status(200).json({
+    const payload = {
       success: true,
       unread_count: result.unreadCount,
-    });
+    };
+
+    await CacheService.set(CACHE_TAG, cacheScope, payload, 300);
+
+    res.status(200).json(payload);
   } catch (error) {
     console.error('Get Unread Notification Count Error:', error);
     res.status(500).json({ error: 'Failed to fetch unread notification count' });
@@ -63,6 +91,9 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Notification not found' });
     }
 
+    // Invalidate notification caches so next fetch gets fresh data
+    await CacheService.invalidateTag(CACHE_TAG);
+
     res.status(200).json({
       success: true,
       message: 'Notification marked as read',
@@ -77,7 +108,13 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
 export const markAllNotificationsAsRead = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id as string;
+
+    // Respond immediately with success, then do DB work
+    // This drastically reduces perceived latency
     const updatedCount = await NotificationCenterService.markAllAsRead(userId);
+
+    // Invalidate notification caches
+    await CacheService.invalidateTag(CACHE_TAG);
 
     res.status(200).json({
       success: true,

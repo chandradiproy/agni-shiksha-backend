@@ -32,9 +32,11 @@ export const getAvailableTests = async (req: Request, res: Response) => {
     };
 
     if (examId) whereClause.exam_id = examId as string;
-    if (type) whereClause.type = type as string;
-
-    const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type || 'all'}:page:${page}:limit:${limit}`;
+    if (type) {
+      const upperType = (type as string).toUpperCase();
+      whereClause.type = upperType;
+    }
+    const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type ? (type as string).toUpperCase() : 'all'}:page:${page}:limit:${limit}`;
     const cachedResponse = await CacheService.get<any>('tests', cacheScope);
 
     if (cachedResponse) {

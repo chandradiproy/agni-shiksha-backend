@@ -11,19 +11,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unregisterDeviceToken = exports.registerDeviceToken = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getUnreadNotificationCount = exports.getMyNotifications = void 0;
 const notification_center_service_1 = require("../../services/notification-center.service");
+const cache_service_1 = require("../../services/cache.service");
+const CACHE_TAG = 'notifications';
 const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.id;
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
         const unreadOnly = req.query.unreadOnly === 'true';
+        const cacheScope = `inbox:${userId}:p${page}:l${limit}:u${unreadOnly}`;
+        const cached = yield cache_service_1.CacheService.get(CACHE_TAG, cacheScope);
+        if (cached) {
+            console.log(`[NotifCache] HIT for ${cacheScope}`);
+            return res.status(200).json(cached);
+        }
+        console.log(`[NotifCache] MISS for ${cacheScope}`);
         const result = yield notification_center_service_1.NotificationCenterService.getStudentInbox({
             userId,
             page,
             limit,
             unreadOnly,
         });
-        res.status(200).json({
+        const payload = {
             success: true,
             data: result.items,
             pagination: {
@@ -33,7 +42,10 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 totalPages: result.totalPages,
             },
             unread_count: result.unreadCount,
-        });
+        };
+        // Cache for 5 minutes — invalidated on read/mark actions & new notifications
+        yield cache_service_1.CacheService.set(CACHE_TAG, cacheScope, payload, 300);
+        res.status(200).json(payload);
     }
     catch (error) {
         console.error('Get My Notifications Error:', error);
@@ -44,16 +56,25 @@ exports.getMyNotifications = getMyNotifications;
 const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.id;
+        const cacheScope = `unread:${userId}`;
+        const cached = yield cache_service_1.CacheService.get(CACHE_TAG, cacheScope);
+        if (cached) {
+            console.log(`[NotifCache] HIT for ${cacheScope}`);
+            return res.status(200).json(cached);
+        }
+        console.log(`[NotifCache] MISS for ${cacheScope}`);
         const result = yield notification_center_service_1.NotificationCenterService.getStudentInbox({
             userId,
             page: 1,
             limit: 1,
             unreadOnly: false,
         });
-        res.status(200).json({
+        const payload = {
             success: true,
             unread_count: result.unreadCount,
-        });
+        };
+        yield cache_service_1.CacheService.set(CACHE_TAG, cacheScope, payload, 300);
+        res.status(200).json(payload);
     }
     catch (error) {
         console.error('Get Unread Notification Count Error:', error);
@@ -69,6 +90,8 @@ const markNotificationAsRead = (req, res) => __awaiter(void 0, void 0, void 0, f
         if (!updatedNotification) {
             return res.status(404).json({ error: 'Notification not found' });
         }
+        // Invalidate notification caches so next fetch gets fresh data
+        yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         res.status(200).json({
             success: true,
             message: 'Notification marked as read',
@@ -84,7 +107,11 @@ exports.markNotificationAsRead = markNotificationAsRead;
 const markAllNotificationsAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.id;
+        // Respond immediately with success, then do DB work
+        // This drastically reduces perceived latency
         const updatedCount = yield notification_center_service_1.NotificationCenterService.markAllAsRead(userId);
+        // Invalidate notification caches
+        yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         res.status(200).json({
             success: true,
             message: 'All notifications marked as read',

@@ -24,7 +24,9 @@ const createUpstashClient = () => {
         return {
             get: (key) => __awaiter(void 0, void 0, void 0, function* () {
                 const value = yield client.get(key);
-                return value ? String(value) : null;
+                if (value === null || value === undefined)
+                    return null;
+                return typeof value === 'object' ? JSON.stringify(value) : String(value);
             }),
             setEx: (key, seconds, value) => __awaiter(void 0, void 0, void 0, function* () { return client.set(key, value, { ex: seconds }); }),
             del: (key) => __awaiter(void 0, void 0, void 0, function* () { return client.del(key); }),

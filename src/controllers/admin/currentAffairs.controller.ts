@@ -3,6 +3,8 @@
 import { Request, Response } from 'express';
 import prisma from '../../config/db';
 import { fetchAndStoreNews } from '../../services/newsService';
+import { CacheService } from '../../services/cache.service';
+import { broadcastCacheInvalidation } from '../../utils/broadcast';
 
 // 1. Manually trigger the news sync
 export const triggerNewsSync = async (req: Request, res: Response) => {
@@ -19,6 +21,11 @@ export const triggerNewsSync = async (req: Request, res: Response) => {
         data: { admin_id: adminId, action: 'TRIGGERED_NEWS_SYNC', target_id: adminId }
       });
     }
+
+    // 🔴 CRITICAL: Invalidate the Redis cache immediately and push signal to phones!
+    await CacheService.invalidateTag('articles');
+    await CacheService.invalidateTag('dashboard_home');
+    broadcastCacheInvalidation('articles');
 
     res.status(200).json({ message: 'News sync completed successfully', data: result });
   } catch (error) {
@@ -82,6 +89,11 @@ export const updateArticleStatus = async (req: Request, res: Response) => {
       }
     });
 
+    // 🔴 Invalidate cache globally
+    await CacheService.invalidateTag('articles');
+    await CacheService.invalidateTag('dashboard_home');
+    broadcastCacheInvalidation('articles');
+
     res.status(200).json({ message: 'Article status updated', article: updatedArticle });
   } catch (error) {
     console.error('Update Article Status Error:', error);
@@ -124,10 +136,68 @@ export const createCustomArticle = async (req: Request, res: Response) => {
       }
     });
 
+    // 🔴 Invalidate cache globally
+    await CacheService.invalidateTag('articles');
+    await CacheService.invalidateTag('dashboard_home');
+    broadcastCacheInvalidation('articles');
+
     res.status(201).json({ message: 'Custom article created successfully', data: article });
   } catch (error) {
     console.error('Create Custom Article Error:', error);
     res.status(500).json({ error: 'Failed to create custom article' });
+  }
+};
+
+
+// 4.5. Edit a Custom Article (Admin Manual Entry Update)
+export const editCustomArticle = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, summary, content, source_name, image_url, is_pinned } = req.body;
+    const adminId = (req as any).admin?.id as string;
+
+    const existingArticle = await prisma.article.findUnique({ where: { id: id as string } });
+    if (!existingArticle) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    // Only allow full text edits for custom (manually created) articles to prevent over-writing syncs
+    if (!existingArticle.is_custom) {
+      return res.status(400).json({ error: 'Cannot edit full content of auto-synced articles natively. Only status updates are permitted.' });
+    }
+
+    const updatedArticle = await prisma.article.update({
+      where: { id: id as string },
+      data: {
+        title: title || existingArticle.title,
+        summary: summary !== undefined ? summary : existingArticle.summary,
+        content: content || existingArticle.content,
+        source_name: source_name || existingArticle.source_name,
+        image_url: image_url !== undefined ? image_url : existingArticle.image_url,
+        is_pinned: is_pinned !== undefined ? is_pinned : existingArticle.is_pinned,
+        updated_by: adminId
+      }
+    });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'EDITED_ARTICLE',
+        target_id: updatedArticle.id,
+        details: { title: updatedArticle.title }
+      }
+    });
+
+    // 🔴 Invalidate cache globally
+    await CacheService.invalidateTag('articles');
+    await CacheService.invalidateTag('dashboard_home');
+    broadcastCacheInvalidation('articles');
+
+    res.status(200).json({ message: 'Custom article updated successfully', data: updatedArticle });
+  } catch (error) {
+    console.error('Edit Custom Article Error:', error);
+    res.status(500).json({ error: 'Failed to edit custom article' });
   }
 };
 
@@ -136,6 +206,9 @@ export const deleteArticle = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const adminId = (req as any).admin?.id as string;
+    const article = await prisma.article.findUnique({ where: { id: id as string } });
+    const article_title = article?.title;
+    const source_url = article?.source_url;
     
     await prisma.article.delete({ where: { id: id as string } });
     
@@ -144,9 +217,15 @@ export const deleteArticle = async (req: Request, res: Response) => {
       data: {
         admin_id: adminId,
         action: 'DELETED_ARTICLE',
-        target_id: id as string
+        target_id: id as string,
+        details: {"title": article_title,"url": source_url }
       }
     });
+
+    // 🔴 Invalidate cache globally
+    await CacheService.invalidateTag('articles');
+    await CacheService.invalidateTag('dashboard_home');
+    broadcastCacheInvalidation('articles');
 
     res.status(200).json({ message: 'Article deleted successfully' });
   } catch (error) {

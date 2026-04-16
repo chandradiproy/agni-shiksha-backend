@@ -138,3 +138,39 @@ export const toggleForumBan = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update student forum access' });
   }
 };
+
+// Revoke ALL active JWT Refresh Token Sessions globally for a compromised user
+export const revokeAllUserSessions = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const adminId = (req as any).admin?.id as string;
+
+    const user = await prisma.user.findUnique({ where: { id: id as string } });
+    if (!user) return res.status(404).json({ error: 'Student not found' });
+
+    // Hardware/Token Security: Forcefully expire all sessions in the DB
+    const deletedSessions = await prisma.userSession.deleteMany({
+      where: { user_id: id as string }
+    });
+
+    // Optional Security Measure: Nullify FCM Token arrays if needed
+    // await prisma.user.update({ where: { id }, data: { device_tokens: [] } });
+
+    // Audit Log
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: adminId,
+        action: 'REVOKED_SESSIONS',
+        target_id: id as string,
+        details: { sessions_terminated: deletedSessions.count }
+      }
+    });
+
+    res.status(200).json({ 
+      message: `Successfully revoked ${deletedSessions.count} active sessions for this student. They will be logged out globally.` 
+    });
+  } catch (error) {
+    console.error('Revoke Sessions Error:', error);
+    res.status(500).json({ error: 'Failed to globally revoke user sessions.' });
+  }
+};

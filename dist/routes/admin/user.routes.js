@@ -11,4 +11,6 @@ router.get('/', adminAuth_1.requireAdmin, user_controller_1.getAllStudents);
 router.put('/:id/ban', adminAuth_1.requireAdmin, user_controller_1.toggleBanStudent);
 // Block or unblock a student from the community forum
 router.put('/:userId/forum-ban', adminAuth_1.requireAdmin, user_controller_1.toggleForumBan);
+// Revoke all remote sessions for security
+router.put('/:id/revoke-sessions', adminAuth_1.requireAdmin, user_controller_1.revokeAllUserSessions);
 exports.default = router;

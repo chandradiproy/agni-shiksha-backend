@@ -17,6 +17,8 @@ exports.deletePlan = exports.updatePlan = exports.getAllPlans = exports.createPl
 const db_1 = __importDefault(require("../../config/db"));
 const cache_service_1 = require("../../services/cache.service");
 const queue_service_1 = require("../../services/queue.service");
+const broadcast_1 = require("../../utils/broadcast");
+const notification_center_service_1 = require("../../services/notification-center.service");
 const CACHE_TAG = 'premium';
 // ==========================================
 // 1. CREATE A NEW PREMIUM PLAN
@@ -50,6 +52,16 @@ const createPlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
+        // Auto-Alert Push
+        yield notification_center_service_1.NotificationCenterService.createAdminNotification({
+            adminId,
+            title: 'New Premium Plan!',
+            body: `Checkout our new subscription plan: ${newPlan.name}`,
+            type: 'MARKETING',
+            audienceType: 'ALL',
+            sendPush: true,
+        }).catch(err => console.error('Auto-Alert Push Error:', err));
         res.status(201).json({ success: true, message: 'Plan created successfully', data: newPlan });
     }
     catch (error) {
@@ -114,6 +126,7 @@ const updatePlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ success: true, message: 'Plan updated successfully', data: updatedPlan });
     }
     catch (error) {
@@ -161,6 +174,7 @@ const deletePlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
         yield cache_service_1.CacheService.invalidateTag(CACHE_TAG);
         yield queue_service_1.QueueService.enqueueSilentSync(CACHE_TAG);
+        (0, broadcast_1.broadcastCacheInvalidation)(CACHE_TAG);
         res.status(200).json({ success: true, message: 'Plan deleted successfully' });
     }
     catch (error) {

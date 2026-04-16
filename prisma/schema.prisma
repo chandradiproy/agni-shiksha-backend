@@ -12,6 +12,21 @@ datasource db {
 // 1. USERS & AUTHENTICATION
 // ==========================================
 
+enum AccessTier {
+  FREE
+  PREMIUM
+  PREMIUM_PLUS
+}
+
+enum TestType {
+  FULL_MOCK
+  SECTIONAL
+  MINI_MOCK
+  PYQ
+  CURRENT_AFFAIRS
+  DAILY_QUIZ
+}
+
 model User {
   id            String  @id @default(uuid()) @db.Uuid
   phone_number  String? @unique @db.VarChar(15)
@@ -166,8 +181,8 @@ model TestSeries {
   exam_id                  String    @db.Uuid
   title                    String    @db.VarChar(200)
   description              String?   @db.Text
-  type                     String    @db.VarChar(30) // free/premium/premium_plus
-  test_type                String    @db.VarChar(30) // full_mock/sectional/mini/pyq/ca
+  type                     AccessTier @default(FREE)
+  test_type                TestType  @default(FULL_MOCK)
   subject                  String?   @db.VarChar(100)
   total_questions          Int       @db.SmallInt
   duration_minutes         Int       @db.SmallInt

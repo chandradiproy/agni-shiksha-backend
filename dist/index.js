@@ -17,6 +17,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const morgan_1 = __importDefault(require("morgan"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const redis_1 = require("./config/redis"); // Imports from src/config/redis/index.ts
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const content_routes_1 = __importDefault(require("./routes/admin/content.routes")); // Import content routes
@@ -44,6 +45,7 @@ const premium_routes_1 = __importDefault(require("./routes/student/premium.route
 const utility_routes_1 = __importDefault(require("./routes/student/utility.routes"));
 const home_routes_1 = __importDefault(require("./routes/student/home.routes"));
 const notification_routes_2 = __importDefault(require("./routes/student/notification.routes"));
+const onboarding_routes_1 = __importDefault(require("./routes/student/onboarding.routes")); // <-- Import Onboarding Routes
 const newsAggregator_1 = require("./corn/newsAggregator"); // <-- Import Cron Job init
 const premiumExperier_1 = require("./corn/premiumExperier"); // <-- Import Premium Expirer Cron Job
 const firebase_1 = __importDefault(require("./config/firebase"));
@@ -52,7 +54,15 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
 // Middleware
-app.use((0, cors_1.default)());
+// Rate limiter
+const apiLimiter = (0, express_rate_limit_1.default)({ windowMs: 60 * 1000, max: 500, message: { error: 'Too many requests' } });
+const corsOptions = {
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081', 'exp://127.0.0.1:8081'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true
+};
+app.use((0, cors_1.default)(corsOptions));
+app.use(apiLimiter);
 app.use(express_1.default.json()); // Parses incoming JSON requests
 app.use((0, morgan_1.default)('dev')); // Logs API requests, methods, and status codes to the terminal
 // Mount Routes
@@ -82,6 +92,7 @@ app.use('/api/v1/student/premium', premium_routes_1.default);
 app.use('/api/v1/student/utilities', utility_routes_1.default);
 app.use('/api/v1/student/home', home_routes_1.default);
 app.use('/api/v1/student/notifications', notification_routes_2.default);
+app.use('/api/v1/onboarding', onboarding_routes_1.default);
 // Health Check Route
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'Agni Shiksha API is running', timestamp: new Date() });

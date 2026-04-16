@@ -13,6 +13,8 @@ router.get('/', adminAuth_1.requireAdmin, currentAffairs_controller_1.getAdminAr
 router.put('/:id/status', adminAuth_1.requireAdmin, currentAffairs_controller_1.updateArticleStatus);
 // Create a manual custom article natively
 router.post('/custom', adminAuth_1.requireAdmin, currentAffairs_controller_1.createCustomArticle);
+// Edit an existing custom article natively
+router.put('/:id', adminAuth_1.requireAdmin, currentAffairs_controller_1.editCustomArticle);
 // Delete an article entirely
 router.delete('/:id', adminAuth_1.requireAdmin, currentAffairs_controller_1.deleteArticle);
 exports.default = router;

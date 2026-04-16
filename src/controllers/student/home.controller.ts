@@ -8,11 +8,14 @@ const fetchWithVersionedCache = async <T>(
   tag: string,
   scope: string,
   ttlSeconds: number,
-  fetcher: () => Promise<T>
+  fetcher: () => Promise<T>,
+  bypassCache: boolean = false
 ): Promise<T> => {
   try {
-    const cached = await CacheService.get<T>(tag, scope);
-    if (cached !== null) return cached;
+    if (!bypassCache) {
+      const cached = await CacheService.get<T>(tag, scope);
+      if (cached !== null) return cached;
+    }
 
     const freshData = await fetcher();
     await CacheService.set(tag, scope, freshData, ttlSeconds);
@@ -28,6 +31,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
   try {
     const t0 = performance.now();
     const userId = (req as any).user.id as string;
+    const bypassCache = req.headers['x-bypass-cache'] === 'true';
 
     // 1. Fetch User Data First (Needed for Streak Logic & Recommendations)
     const user = await prisma.user.findUnique({
@@ -127,7 +131,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
           orderBy: { created_at: 'desc' },
           select: { id: true, title: true, total_marks: true, duration_minutes: true }
         })
-      ),
+      , bypassCache),
 
       // B. Cache per exam category for 1 hour
       fetchWithVersionedCache(
@@ -138,7 +142,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
         // FIXED: Using `testSeries` instead of `test`
         prisma.testSeries.findMany({
           where: { 
-            test_type: 'MOCK_TEST', 
+            test_type: 'FULL_MOCK', 
             is_published: true,
             ...(user.target_exam_id ? { exam_id: user.target_exam_id } : {}) 
           },
@@ -147,7 +151,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
           // FIXED: Using `type` instead of `is_premium` because schema dictates `type String`
           select: { id: true, title: true, total_marks: true, duration_minutes: true, type: true }
         })
-      ),
+      , bypassCache),
 
       // C. Cache globally for 15 minutes (News updates frequently)
       fetchWithVersionedCache('articles', 'home:latest_articles', 900, () => 
@@ -157,7 +161,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
           orderBy: [{ is_pinned: 'desc' }, { published_at: 'desc' }],
           select: { id: true, title: true, category: true, image_url: true, published_at: true }
         })
-      ),
+      , bypassCache),
 
       // D. Cache individually per user for 15 minutes
       fetchWithVersionedCache('recent-performance', `home:recent_performance:${userId}`, 900, () => 
@@ -174,7 +178,7 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
             test_series: { select: { title: true, total_marks: true } }
           }
         })
-      )
+      , bypassCache)
     ]);
 
     const t2 = performance.now();

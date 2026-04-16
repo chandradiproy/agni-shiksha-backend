@@ -39,6 +39,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // src/config/firebase.ts
 const admin = __importStar(require("firebase-admin"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 dotenv_1.default.config();
 /**
  * Professional Firebase Admin SDK Initialization
@@ -50,7 +52,8 @@ const initializeFirebase = () => {
         if (admin.apps.length === 0) {
             // Option 1: Using a JSON string from environment variable (Recommended for production)
             if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-                const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+                const filePath = path.resolve(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+                const serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
                 admin.initializeApp({
                     credential: admin.credential.cert(serviceAccount),
                 });
