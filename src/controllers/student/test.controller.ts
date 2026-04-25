@@ -21,10 +21,11 @@ export const submissionQueue = new Queue('test-submissions', {
 // ==========================================
 export const getAvailableTests = async (req: Request, res: Response) => {
   try {
-    const { examId, type } = req.query;
+    const { examId, type, categoryId } = req.query;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
+    const bypassCache = req.headers['x-bypass-cache'] === 'true';
 
     const whereClause: any = {
       is_active: true,
@@ -32,12 +33,13 @@ export const getAvailableTests = async (req: Request, res: Response) => {
     };
 
     if (examId) whereClause.exam_id = examId as string;
+    if (categoryId) whereClause.exam_category_id = categoryId as string;
     if (type) {
       const upperType = (type as string).toUpperCase();
       whereClause.type = upperType;
     }
-    const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type ? (type as string).toUpperCase() : 'all'}:page:${page}:limit:${limit}`;
-    const cachedResponse = await CacheService.get<any>('tests', cacheScope);
+    const cacheScope = `available_tests:cat:${categoryId || 'all'}:exam:${examId || 'all'}:type:${type ? (type as string).toUpperCase() : 'all'}:page:${page}:limit:${limit}`;
+    const cachedResponse = bypassCache ? null : await CacheService.get<any>('tests', cacheScope);
 
     if (cachedResponse) {
       return res.status(200).json(cachedResponse);
@@ -322,5 +324,141 @@ export const submitTest = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Submit Test Error:', error);
     res.status(500).json({ error: 'Failed to submit test' });
+  }
+};
+
+// ==========================================
+// 5. SYNC EXAM ANSWERS (Offline Recovery Engine)
+// ==========================================
+export const syncAttemptAnswers = async (req: Request, res: Response) => {
+  try {
+    const { attemptId } = req.params;
+    const { incremental_answers } = req.body; // Expects an array: { question_id, selected_option_id, time_taken }[]
+    const userId = (req as any).user.id as string;
+
+    if (!Array.isArray(incremental_answers) || incremental_answers.length === 0) {
+      return res.status(200).json({ success: true, message: 'Nothing to sync' });
+    }
+
+    const attempt = await prisma.testAttempt.findUnique({
+      where: { id: attemptId as string }
+    });
+
+    if (!attempt || attempt.user_id !== userId) {
+      return res.status(404).json({ error: 'Test attempt not found' });
+    }
+
+    if (attempt.status === 'completed') {
+      return res.status(400).json({ error: 'Attempt already submitted' });
+    }
+
+    // Attempt.answers is a JSON array. We need to merge incremental_answers into it.
+    // Parse current array
+    const currentAnswers: any[] = Array.isArray(attempt.answers) ? attempt.answers as any[] : [];
+    
+    // Merge by question_id (upsert logic in memory)
+    const answersMap = new Map(currentAnswers.map(ans => [ans.question_id, ans]));
+    
+    incremental_answers.forEach((incAns) => {
+      // Overwrite or add
+      answersMap.set(incAns.question_id, {
+        question_id: incAns.question_id,
+        selected_option_id: incAns.selected_option_id,
+        time_taken: incAns.time_taken || 0
+      });
+    });
+
+    const mergedAnswers = Array.from(answersMap.values());
+
+    await prisma.testAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        answers: mergedAnswers
+      }
+    });
+
+    res.status(200).json({ success: true, message: 'Answers synced successfully', synced_count: incremental_answers.length });
+  } catch (error) {
+    console.error('Sync Test Error:', error);
+    res.status(500).json({ error: 'Failed to sync answers' });
+  }
+};
+
+// ==========================================
+// 6. GET MY ATTEMPTS (History)
+// ==========================================
+export const getMyAttempts = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const [attempts, totalCount] = await Promise.all([
+      prisma.testAttempt.findMany({
+        where: { user_id: userId },
+        skip,
+        take: limit,
+        orderBy: { started_at: 'desc' },
+        include: {
+          test_series: {
+            select: { id: true, title: true, type: true, test_type: true, difficulty: true, total_marks: true, duration_minutes: true }
+          }
+        }
+      }),
+      prisma.testAttempt.count({ where: { user_id: userId } })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: attempts,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get My Attempts Error:', error);
+    res.status(500).json({ error: 'Failed to fetch attempt history' });
+  }
+};
+
+// ==========================================
+// 7. REPORT QUESTION
+// ==========================================
+export const reportQuestion = async (req: Request, res: Response) => {
+  try {
+    const { attemptId } = req.params;
+    const { question_id, reason } = req.body;
+    const userId = (req as any).user.id as string;
+
+    if (!question_id || !reason) {
+      return res.status(400).json({ error: 'question_id and reason are required' });
+    }
+
+    const attempt = await prisma.testAttempt.findUnique({
+      where: { id: attemptId as string }
+    });
+
+    if (!attempt || attempt.user_id !== userId) {
+      return res.status(404).json({ error: 'Test attempt not found' });
+    }
+
+    // We reuse the Report model originally defined for Forum, using item_type="QUESTION"
+    const report = await prisma.report.create({
+      data: {
+        reported_by_user_id: userId,
+        item_id: question_id,
+        item_type: 'QUESTION',
+        reason: reason
+      }
+    });
+
+    res.status(201).json({ success: true, message: 'Question reported successfully', data: report });
+  } catch (error) {
+    console.error('Report Question Error:', error);
+    res.status(500).json({ error: 'Failed to report question' });
   }
 };

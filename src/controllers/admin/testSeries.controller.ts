@@ -120,9 +120,16 @@ export const updateTestSeries = async (req: Request, res: Response) => {
     }
 
     // 2. VALIDATION LOCK: If it is already published, we block structural changes.
-    if (existingTest.is_published === true) {
+    // Skip this lock if the user is explicitly unpublishing the test in this request.
+    if (existingTest.is_published === true && updateData.is_published !== false) {
       const forbiddenLiveEdits = ['total_questions', 'total_marks', 'duration_minutes', 'negative_marks_per_wrong'];
-      const attemptedForbiddenEdits = forbiddenLiveEdits.filter(field => updateData[field] !== undefined);
+      
+      // Only flag fields that ACTUALLY changed value
+      const attemptedForbiddenEdits = forbiddenLiveEdits.filter(field => {
+        if (updateData[field] === undefined) return false;
+        if (field === 'negative_marks_per_wrong') return Number(updateData[field]) !== Number(existingTest[field as keyof typeof existingTest]);
+        return updateData[field] !== existingTest[field as keyof typeof existingTest];
+      });
       
       if (attemptedForbiddenEdits.length > 0) {
         return res.status(403).json({ 

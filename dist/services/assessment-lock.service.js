@@ -54,7 +54,7 @@ const getTestSeriesMutationBlock = (testSeriesId, action) => __awaiter(void 0, v
             error: `Cannot ${action} while ${inProgressAttempts} student attempt(s) are currently in progress for this test series.`,
         };
     }
-    if (isTestSeriesLiveNow(testSeries)) {
+    if (action !== 'update this test series' && isTestSeriesLiveNow(testSeries)) {
         return {
             status: 409,
             error: `Cannot ${action} while this test series is live and available to students.`,

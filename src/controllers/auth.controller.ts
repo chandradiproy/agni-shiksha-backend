@@ -10,6 +10,7 @@ import { OAuth2Client } from 'google-auth-library';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import * as admin from 'firebase-admin';
+import { NotificationService } from '../services/notification.service';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'fallback_access_secret';
@@ -141,6 +142,11 @@ export const register = async (req: Request, res: Response) => {
         full_name: user.full_name,
         email: user.email,
         phone_number: user.phone_number,
+        avatar_id: user.avatar_id,
+        level: user.level,
+        xp_total: user.xp_total,
+        is_premium: user.is_premium,
+        onboarding_completed: user.onboarding_completed
       }
     });
   } catch (error) {
@@ -186,7 +192,11 @@ export const loginWithPassword = async (req: Request, res: Response) => {
         full_name: user.full_name,
         email: user.email,
         phone_number: user.phone_number,
+        avatar_id: user.avatar_id,
+        level: user.level,
+        xp_total: user.xp_total,
         is_premium: user.is_premium,
+        onboarding_completed: user.onboarding_completed
       }
     });
   } catch (error) {
@@ -238,6 +248,11 @@ export const verifyOtp = async (req: Request, res: Response) => {
         full_name: user.full_name,
         email: user.email,
         phone_number: user.phone_number,
+        avatar_id: user.avatar_id,
+        level: user.level,
+        xp_total: user.xp_total,
+        is_premium: user.is_premium,
+        onboarding_completed: user.onboarding_completed
       }
     });
   } catch (error) {
@@ -285,6 +300,12 @@ export const googleLogin = async (req: Request, res: Response) => {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
+        phone_number: user.phone_number,
+        avatar_id: user.avatar_id,
+        level: user.level,
+        xp_total: user.xp_total,
+        is_premium: user.is_premium,
+        onboarding_completed: user.onboarding_completed
       }
     });
   } catch (error) {
@@ -627,6 +648,7 @@ export const updateFcmToken = async (req: Request, res: Response) => {
       where: { id: userId },
       data: { device_tokens: tokens }
     });
+    await NotificationService.subscribeTokenToGlobalTopic(token);
 
     res.json({ success: true, message: 'FCM token registered' });
   } catch (err) {

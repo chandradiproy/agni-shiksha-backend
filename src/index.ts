@@ -19,6 +19,7 @@ import adminPlanRoutes from './routes/admin/plan.routes'; // <-- Import Plan Man
 import adminFinancialRoutes from './routes/admin/financial.routes';
 import adminCouponRoutes from './routes/admin/coupon.routes'; // <-- Import Coupon Routes
 import adminNotificationRoutes from './routes/admin/notification.routes';
+import adminCategoryRoutes from './routes/admin/category.routes'; // <-- Import Category Routes
 
 import adminAuthRoutes from './routes/adminAuth.routes';
 import studentTestRoutes from './routes/student/test.routes'; // <-- Import Student Routes
@@ -33,6 +34,7 @@ import utilityRoutes from './routes/student/utility.routes';
 import homeRoutes from './routes/student/home.routes';
 import studentNotificationRoutes from './routes/student/notification.routes';
 import studentOnboardingRoutes from './routes/student/onboarding.routes'; // <-- Import Onboarding Routes
+import studentCategoryRoutes from './routes/student/category.routes'; // <-- Import Student Category Routes
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 import { schedulePremiumExpirer } from './corn/premiumExperier'; // <-- Import Premium Expirer Cron Job
@@ -44,12 +46,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+app.disable('etag');
+
 // Middleware
 // Rate limiter
 const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 500, message: { error: 'Too many requests' } });
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081', 'exp://127.0.0.1:8081'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081','http://localhost:8001', 'exp://127.0.0.1:8081'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true
 };
@@ -58,6 +62,15 @@ app.use(cors(corsOptions));
 app.use(apiLimiter);
 app.use(express.json()); // Parses incoming JSON requests
 app.use(morgan('dev')); // Logs API requests, methods, and status codes to the terminal
+app.use('/api', (_req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+    'Surrogate-Control': 'no-store',
+  });
+  next();
+});
 
 // Mount Routes
 app.use('/api/v1/admin/auth', adminAuthRoutes);
@@ -74,6 +87,7 @@ app.use('/api/v1/admin/plans', adminPlanRoutes); // <-- Mount Plan Management Ro
 app.use('/api/v1/admin/financial', adminFinancialRoutes); // <-- Mount Financial Routes
 app.use('/api/v1/admin/coupons', adminCouponRoutes);
 app.use('/api/v1/admin/notifications', adminNotificationRoutes);
+app.use('/api/v1/admin/categories', adminCategoryRoutes); // <-- Mount Category CRUD
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/student/tests', studentTestRoutes); // <-- Mount Student Routes
@@ -87,6 +101,7 @@ app.use('/api/v1/student/premium', premiumRoutes);
 app.use('/api/v1/student/utilities', utilityRoutes);
 app.use('/api/v1/student/home', homeRoutes);
 app.use('/api/v1/student/notifications', studentNotificationRoutes);
+app.use('/api/v1/student/categories', studentCategoryRoutes); // <-- Mount Student Categories
 
 app.use('/api/v1/onboarding', studentOnboardingRoutes);
 

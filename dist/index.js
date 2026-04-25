@@ -33,6 +33,7 @@ const plan_routes_1 = __importDefault(require("./routes/admin/plan.routes")); //
 const financial_routes_1 = __importDefault(require("./routes/admin/financial.routes"));
 const coupon_routes_1 = __importDefault(require("./routes/admin/coupon.routes")); // <-- Import Coupon Routes
 const notification_routes_1 = __importDefault(require("./routes/admin/notification.routes"));
+const category_routes_1 = __importDefault(require("./routes/admin/category.routes")); // <-- Import Category Routes
 const adminAuth_routes_1 = __importDefault(require("./routes/adminAuth.routes"));
 const test_routes_1 = __importDefault(require("./routes/student/test.routes")); // <-- Import Student Routes
 const dashboard_routes_2 = __importDefault(require("./routes/student/dashboard.routes")); // <-- Import Student Dashboard Routes
@@ -46,6 +47,7 @@ const utility_routes_1 = __importDefault(require("./routes/student/utility.route
 const home_routes_1 = __importDefault(require("./routes/student/home.routes"));
 const notification_routes_2 = __importDefault(require("./routes/student/notification.routes"));
 const onboarding_routes_1 = __importDefault(require("./routes/student/onboarding.routes")); // <-- Import Onboarding Routes
+const category_routes_2 = __importDefault(require("./routes/student/category.routes")); // <-- Import Student Category Routes
 const newsAggregator_1 = require("./corn/newsAggregator"); // <-- Import Cron Job init
 const premiumExperier_1 = require("./corn/premiumExperier"); // <-- Import Premium Expirer Cron Job
 const firebase_1 = __importDefault(require("./config/firebase"));
@@ -53,11 +55,12 @@ require("./workers/notification.worker");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
+app.disable('etag');
 // Middleware
 // Rate limiter
 const apiLimiter = (0, express_rate_limit_1.default)({ windowMs: 60 * 1000, max: 500, message: { error: 'Too many requests' } });
 const corsOptions = {
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081', 'exp://127.0.0.1:8081'],
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081', 'http://localhost:8001', 'exp://127.0.0.1:8081'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 };
@@ -65,6 +68,15 @@ app.use((0, cors_1.default)(corsOptions));
 app.use(apiLimiter);
 app.use(express_1.default.json()); // Parses incoming JSON requests
 app.use((0, morgan_1.default)('dev')); // Logs API requests, methods, and status codes to the terminal
+app.use('/api', (_req, res, next) => {
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+        'Surrogate-Control': 'no-store',
+    });
+    next();
+});
 // Mount Routes
 app.use('/api/v1/admin/auth', adminAuth_routes_1.default);
 app.use('/api/v1/admin/content', content_routes_1.default); // Mount content routes under /api/v1/admin
@@ -80,6 +92,7 @@ app.use('/api/v1/admin/plans', plan_routes_1.default); // <-- Mount Plan Managem
 app.use('/api/v1/admin/financial', financial_routes_1.default); // <-- Mount Financial Routes
 app.use('/api/v1/admin/coupons', coupon_routes_1.default);
 app.use('/api/v1/admin/notifications', notification_routes_1.default);
+app.use('/api/v1/admin/categories', category_routes_1.default); // <-- Mount Category CRUD
 app.use('/api/v1/auth', auth_routes_1.default);
 app.use('/api/v1/student/tests', test_routes_1.default); // <-- Mount Student Routes
 app.use('/api/v1/student/dashboard', dashboard_routes_2.default); // <-- Mount Student Dashboard Routes
@@ -92,6 +105,7 @@ app.use('/api/v1/student/premium', premium_routes_1.default);
 app.use('/api/v1/student/utilities', utility_routes_1.default);
 app.use('/api/v1/student/home', home_routes_1.default);
 app.use('/api/v1/student/notifications', notification_routes_2.default);
+app.use('/api/v1/student/categories', category_routes_2.default); // <-- Mount Student Categories
 app.use('/api/v1/onboarding', onboarding_routes_1.default);
 // Health Check Route
 app.get('/health', (req, res) => {

@@ -36,14 +36,15 @@ export class NotificationService {
   static async triggerSync(tag: string): Promise<void> {
     const message: admin.messaging.Message = {
       data: {
-        type: "SYNC_REQUIRED",
+        type: "CACHE_INVALIDATE",
+        target: tag,
         tag: tag,
         timestamp: Date.now().toString(),
       },
       topic: this.GLOBAL_TOPIC,
       // Priority settings to ensure delivery while optimizing battery
       android: {
-        priority: "normal",
+        priority: "high",
       },
       apns: {
         payload: {

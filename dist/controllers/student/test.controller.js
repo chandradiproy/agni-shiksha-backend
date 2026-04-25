@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.submitTest = exports.startTest = exports.getTestDetails = exports.getAvailableTests = exports.submissionQueue = void 0;
+exports.reportQuestion = exports.getMyAttempts = exports.syncAttemptAnswers = exports.submitTest = exports.startTest = exports.getTestDetails = exports.getAvailableTests = exports.submissionQueue = void 0;
 const bullmq_1 = require("bullmq");
 const ioredis_1 = __importDefault(require("ioredis"));
 const db_1 = __importDefault(require("../../config/db"));
@@ -31,22 +31,25 @@ exports.submissionQueue = new bullmq_1.Queue('test-submissions', {
 // ==========================================
 const getAvailableTests = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { examId, type } = req.query;
+        const { examId, type, categoryId } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
+        const bypassCache = req.headers['x-bypass-cache'] === 'true';
         const whereClause = {
             is_active: true,
             is_published: true,
         };
         if (examId)
             whereClause.exam_id = examId;
+        if (categoryId)
+            whereClause.exam_category_id = categoryId;
         if (type) {
             const upperType = type.toUpperCase();
             whereClause.type = upperType;
         }
-        const cacheScope = `available_tests:exam:${examId || 'all'}:type:${type ? type.toUpperCase() : 'all'}:page:${page}:limit:${limit}`;
-        const cachedResponse = yield cache_service_1.CacheService.get('tests', cacheScope);
+        const cacheScope = `available_tests:cat:${categoryId || 'all'}:exam:${examId || 'all'}:type:${type ? type.toUpperCase() : 'all'}:page:${page}:limit:${limit}`;
+        const cachedResponse = bypassCache ? null : yield cache_service_1.CacheService.get('tests', cacheScope);
         if (cachedResponse) {
             return res.status(200).json(cachedResponse);
         }
@@ -302,3 +305,125 @@ const submitTest = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.submitTest = submitTest;
+// ==========================================
+// 5. SYNC EXAM ANSWERS (Offline Recovery Engine)
+// ==========================================
+const syncAttemptAnswers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { attemptId } = req.params;
+        const { incremental_answers } = req.body; // Expects an array: { question_id, selected_option_id, time_taken }[]
+        const userId = req.user.id;
+        if (!Array.isArray(incremental_answers) || incremental_answers.length === 0) {
+            return res.status(200).json({ success: true, message: 'Nothing to sync' });
+        }
+        const attempt = yield db_1.default.testAttempt.findUnique({
+            where: { id: attemptId }
+        });
+        if (!attempt || attempt.user_id !== userId) {
+            return res.status(404).json({ error: 'Test attempt not found' });
+        }
+        if (attempt.status === 'completed') {
+            return res.status(400).json({ error: 'Attempt already submitted' });
+        }
+        // Attempt.answers is a JSON array. We need to merge incremental_answers into it.
+        // Parse current array
+        const currentAnswers = Array.isArray(attempt.answers) ? attempt.answers : [];
+        // Merge by question_id (upsert logic in memory)
+        const answersMap = new Map(currentAnswers.map(ans => [ans.question_id, ans]));
+        incremental_answers.forEach((incAns) => {
+            // Overwrite or add
+            answersMap.set(incAns.question_id, {
+                question_id: incAns.question_id,
+                selected_option_id: incAns.selected_option_id,
+                time_taken: incAns.time_taken || 0
+            });
+        });
+        const mergedAnswers = Array.from(answersMap.values());
+        yield db_1.default.testAttempt.update({
+            where: { id: attempt.id },
+            data: {
+                answers: mergedAnswers
+            }
+        });
+        res.status(200).json({ success: true, message: 'Answers synced successfully', synced_count: incremental_answers.length });
+    }
+    catch (error) {
+        console.error('Sync Test Error:', error);
+        res.status(500).json({ error: 'Failed to sync answers' });
+    }
+});
+exports.syncAttemptAnswers = syncAttemptAnswers;
+// ==========================================
+// 6. GET MY ATTEMPTS (History)
+// ==========================================
+const getMyAttempts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+        const [attempts, totalCount] = yield Promise.all([
+            db_1.default.testAttempt.findMany({
+                where: { user_id: userId },
+                skip,
+                take: limit,
+                orderBy: { started_at: 'desc' },
+                include: {
+                    test_series: {
+                        select: { id: true, title: true, type: true, test_type: true, difficulty: true, total_marks: true, duration_minutes: true }
+                    }
+                }
+            }),
+            db_1.default.testAttempt.count({ where: { user_id: userId } })
+        ]);
+        res.status(200).json({
+            success: true,
+            data: attempts,
+            pagination: {
+                total: totalCount,
+                page,
+                limit,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        });
+    }
+    catch (error) {
+        console.error('Get My Attempts Error:', error);
+        res.status(500).json({ error: 'Failed to fetch attempt history' });
+    }
+});
+exports.getMyAttempts = getMyAttempts;
+// ==========================================
+// 7. REPORT QUESTION
+// ==========================================
+const reportQuestion = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { attemptId } = req.params;
+        const { question_id, reason } = req.body;
+        const userId = req.user.id;
+        if (!question_id || !reason) {
+            return res.status(400).json({ error: 'question_id and reason are required' });
+        }
+        const attempt = yield db_1.default.testAttempt.findUnique({
+            where: { id: attemptId }
+        });
+        if (!attempt || attempt.user_id !== userId) {
+            return res.status(404).json({ error: 'Test attempt not found' });
+        }
+        // We reuse the Report model originally defined for Forum, using item_type="QUESTION"
+        const report = yield db_1.default.report.create({
+            data: {
+                reported_by_user_id: userId,
+                item_id: question_id,
+                item_type: 'QUESTION',
+                reason: reason
+            }
+        });
+        res.status(201).json({ success: true, message: 'Question reported successfully', data: report });
+    }
+    catch (error) {
+        console.error('Report Question Error:', error);
+        res.status(500).json({ error: 'Failed to report question' });
+    }
+});
+exports.reportQuestion = reportQuestion;

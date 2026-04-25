@@ -118,9 +118,17 @@ const updateTestSeries = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.status(404).json({ error: 'Test Series not found' });
         }
         // 2. VALIDATION LOCK: If it is already published, we block structural changes.
-        if (existingTest.is_published === true) {
+        // Skip this lock if the user is explicitly unpublishing the test in this request.
+        if (existingTest.is_published === true && updateData.is_published !== false) {
             const forbiddenLiveEdits = ['total_questions', 'total_marks', 'duration_minutes', 'negative_marks_per_wrong'];
-            const attemptedForbiddenEdits = forbiddenLiveEdits.filter(field => updateData[field] !== undefined);
+            // Only flag fields that ACTUALLY changed value
+            const attemptedForbiddenEdits = forbiddenLiveEdits.filter(field => {
+                if (updateData[field] === undefined)
+                    return false;
+                if (field === 'negative_marks_per_wrong')
+                    return Number(updateData[field]) !== Number(existingTest[field]);
+                return updateData[field] !== existingTest[field];
+            });
             if (attemptedForbiddenEdits.length > 0) {
                 return res.status(403).json({
                     error: `Cannot modify structural fields (${attemptedForbiddenEdits.join(', ')}) while the test is published. Please unpublish first.`

@@ -68,14 +68,15 @@ class NotificationService {
         return __awaiter(this, void 0, void 0, function* () {
             const message = {
                 data: {
-                    type: "SYNC_REQUIRED",
+                    type: "CACHE_INVALIDATE",
+                    target: tag,
                     tag: tag,
                     timestamp: Date.now().toString(),
                 },
                 topic: this.GLOBAL_TOPIC,
                 // Priority settings to ensure delivery while optimizing battery
                 android: {
-                    priority: "normal",
+                    priority: "high",
                 },
                 apns: {
                     payload: {

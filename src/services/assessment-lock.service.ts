@@ -65,7 +65,7 @@ export const getTestSeriesMutationBlock = async (
     };
   }
 
-  if (isTestSeriesLiveNow(testSeries)) {
+  if (action !== 'update this test series' && isTestSeriesLiveNow(testSeries)) {
     return {
       status: 409,
       error: `Cannot ${action} while this test series is live and available to students.`,

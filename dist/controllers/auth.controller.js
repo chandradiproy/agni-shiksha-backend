@@ -55,6 +55,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const google_auth_library_1 = require("google-auth-library");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const admin = __importStar(require("firebase-admin"));
+const notification_service_1 = require("../services/notification.service");
 const googleClient = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'fallback_access_secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'fallback_refresh_secret';
@@ -163,6 +164,11 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 full_name: user.full_name,
                 email: user.email,
                 phone_number: user.phone_number,
+                avatar_id: user.avatar_id,
+                level: user.level,
+                xp_total: user.xp_total,
+                is_premium: user.is_premium,
+                onboarding_completed: user.onboarding_completed
             }
         });
     }
@@ -203,7 +209,11 @@ const loginWithPassword = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 full_name: user.full_name,
                 email: user.email,
                 phone_number: user.phone_number,
+                avatar_id: user.avatar_id,
+                level: user.level,
+                xp_total: user.xp_total,
                 is_premium: user.is_premium,
+                onboarding_completed: user.onboarding_completed
             }
         });
     }
@@ -248,6 +258,11 @@ const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 full_name: user.full_name,
                 email: user.email,
                 phone_number: user.phone_number,
+                avatar_id: user.avatar_id,
+                level: user.level,
+                xp_total: user.xp_total,
+                is_premium: user.is_premium,
+                onboarding_completed: user.onboarding_completed
             }
         });
     }
@@ -291,6 +306,12 @@ const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 id: user.id,
                 full_name: user.full_name,
                 email: user.email,
+                phone_number: user.phone_number,
+                avatar_id: user.avatar_id,
+                level: user.level,
+                xp_total: user.xp_total,
+                is_premium: user.is_premium,
+                onboarding_completed: user.onboarding_completed
             }
         });
     }
@@ -608,6 +629,7 @@ const updateFcmToken = (req, res) => __awaiter(void 0, void 0, void 0, function*
             where: { id: userId },
             data: { device_tokens: tokens }
         });
+        yield notification_service_1.NotificationService.subscribeTokenToGlobalTopic(token);
         res.json({ success: true, message: 'FCM token registered' });
     }
     catch (err) {

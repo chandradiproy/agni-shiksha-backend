@@ -1,0 +1,611 @@
+{
+  "communities": {
+    "0": [
+      "assessment_lock_service_getexammutationblock",
+      "broadcast_broadcastcacheinvalidation",
+      "cache_service_cacheservice_invalidatetag",
+      "coupon_controller_createcoupon",
+      "coupon_controller_deletecoupon",
+      "coupon_controller_getallcoupons",
+      "coupon_controller_togglecouponstatus",
+      "coupon_controller_updatecoupon",
+      "currentaffairs_controller_createcustomarticle",
+      "currentaffairs_controller_deletearticle",
+      "currentaffairs_controller_editcustomarticle",
+      "currentaffairs_controller_getadminarticles",
+      "currentaffairs_controller_triggernewssync",
+      "currentaffairs_controller_updatearticlestatus",
+      "exam_controller_createexam",
+      "exam_controller_deleteexam",
+      "exam_controller_getallexams",
+      "exam_controller_updateexam",
+      "newsservice_fetchandstorenews",
+      "plan_controller_createplan",
+      "plan_controller_deleteplan",
+      "plan_controller_getallplans",
+      "plan_controller_updateplan",
+      "question_controller_deletequestion",
+      "queue_service_queueservice_enqueuesilentsync",
+      "src_controllers_admin_coupon_controller_ts",
+      "src_controllers_admin_currentaffairs_controller_ts",
+      "src_controllers_admin_exam_controller_ts",
+      "src_controllers_admin_plan_controller_ts",
+      "src_controllers_admin_study_controller_ts",
+      "src_controllers_admin_testseries_controller_ts",
+      "src_services_newsservice_ts",
+      "src_utils_broadcast_ts",
+      "study_controller_addstudyplantask",
+      "study_controller_createstudymaterial",
+      "study_controller_createstudyplan",
+      "study_controller_deletestudymaterial",
+      "study_controller_deletestudyplan",
+      "study_controller_deletestudyplantask",
+      "study_controller_updatestudymaterial",
+      "study_controller_updatestudyplan",
+      "study_controller_updatestudyplantask",
+      "testseries_controller_createtestseries",
+      "testseries_controller_deletetestseries",
+      "testseries_controller_gettestseriesbyexam",
+      "testseries_controller_updatetestseries"
+    ],
+    "1": [
+      "auth_controller_deleteaccount",
+      "auth_controller_logout",
+      "auth_controller_updateme",
+      "check_ts",
+      "check_update",
+      "gamification_controller_createbadge",
+      "gamification_controller_createquest",
+      "gamification_controller_deletebadge",
+      "gamification_controller_deletequest",
+      "gamification_controller_getbadges",
+      "gamification_controller_getquests",
+      "gamification_controller_updatebadge",
+      "gamification_controller_updatequest",
+      "moderation_controller_deletedoubt",
+      "moderation_controller_deletedoubtanswer",
+      "moderation_controller_getmoderationdoubts",
+      "moderation_controller_updatedoubtstatus",
+      "social_controller_createdoubt",
+      "social_controller_getanswers",
+      "social_controller_getdoubts",
+      "social_controller_postanswer",
+      "social_controller_reportcontent",
+      "social_controller_toggleupvote",
+      "src_controllers_admin_gamification_controller_ts",
+      "src_controllers_admin_moderation_controller_ts",
+      "src_controllers_admin_user_controller_ts",
+      "src_controllers_student_social_controller_ts",
+      "src_controllers_student_utility_controller_ts",
+      "user_controller_getallstudents",
+      "user_controller_revokeallusersessions",
+      "user_controller_togglebanstudent",
+      "user_controller_toggleforumban",
+      "utility_controller_createnote",
+      "utility_controller_deletenote",
+      "utility_controller_getbookmarks",
+      "utility_controller_getnotes",
+      "utility_controller_togglebookmark",
+      "utility_controller_updatenote"
+    ],
+    "2": [
+      "cache_service_cacheservice_set",
+      "currentaffairs_controller_getarticledetails",
+      "currentaffairs_controller_getarticles",
+      "dashboard_controller_fetchwithversionedcache",
+      "dashboard_controller_getaiinsights",
+      "dashboard_controller_gethomedashboard",
+      "home_controller_fetchwithversionedcache",
+      "home_controller_gethomedashboard",
+      "onboarding_controller_completeonboarding",
+      "onboarding_controller_getexams",
+      "onboarding_controller_getexamsubjects",
+      "onboarding_controller_gettutorialdata",
+      "onboarding_controller_setuponboarding",
+      "premium_controller_calculatediscountedprice",
+      "premium_controller_createorder",
+      "premium_controller_getactiveplans",
+      "premium_controller_handlerazorpaywebhook",
+      "premium_controller_validatecoupon",
+      "src_controllers_student_currentaffairs_controller_ts",
+      "src_controllers_student_dashboard_controller_ts",
+      "src_controllers_student_home_controller_ts",
+      "src_controllers_student_onboarding_controller_ts",
+      "src_controllers_student_premium_controller_ts",
+      "src_controllers_student_study_controller_ts",
+      "src_controllers_student_test_controller_ts",
+      "study_controller_getstudymaterials",
+      "study_controller_getstudyplans",
+      "test_controller_getavailabletests",
+      "test_controller_getmyattempts",
+      "test_controller_gettestdetails",
+      "test_controller_reportquestion",
+      "test_controller_starttest",
+      "test_controller_submittest",
+      "test_controller_syncattemptanswers"
+    ],
+    "3": [
+      "auth_controller_updatefcmtoken",
+      "notification_center_service_buildpushdata",
+      "notification_center_service_normalizestringarray",
+      "notification_center_service_notificationcenterservice",
+      "notification_center_service_notificationcenterservice_createadminnotification",
+      "notification_center_service_notificationcenterservice_getadminnotifications",
+      "notification_center_service_notificationcenterservice_getstudentinbox",
+      "notification_center_service_notificationcenterservice_markallasread",
+      "notification_center_service_notificationcenterservice_markasread",
+      "notification_center_service_notificationcenterservice_registerdevicetoken",
+      "notification_center_service_notificationcenterservice_resolveaudienceusers",
+      "notification_center_service_notificationcenterservice_unregisterdevicetoken",
+      "notification_controller_createnotification",
+      "notification_controller_getmynotifications",
+      "notification_controller_getnotifications",
+      "notification_controller_getunreadnotificationcount",
+      "notification_controller_markallnotificationsasread",
+      "notification_controller_marknotificationasread",
+      "notification_controller_registerdevicetoken",
+      "notification_controller_unregisterdevicetoken",
+      "notification_service_notificationservice",
+      "notification_service_notificationservice_chunktokens",
+      "notification_service_notificationservice_getglobaltopic",
+      "notification_service_notificationservice_sendalert",
+      "notification_service_notificationservice_subscribetokentoglobaltopic",
+      "notification_service_notificationservice_triggersync",
+      "notification_service_notificationservice_unsubscribetokenfromglobaltopic",
+      "queue_service_queueservice",
+      "queue_service_queueservice_enqueuealert",
+      "src_controllers_admin_notification_controller_ts",
+      "src_controllers_student_notification_controller_ts",
+      "src_services_notification_center_service_ts",
+      "src_services_notification_service_ts",
+      "src_services_queue_service_ts"
+    ],
+    "4": [
+      "adminauth_requireadmin",
+      "adminauth_requirerole",
+      "analysis_controller_gettestanalysis",
+      "analysis_controller_gettestreview",
+      "auth_requireauth",
+      "biometric_controller_getloginoptions",
+      "biometric_controller_getregistrationoptions",
+      "biometric_controller_verifylogin",
+      "biometric_controller_verifyregistration",
+      "biometric_controller_verifyrnbiometriclogin",
+      "biometric_controller_verifyrnbiometricregistration",
+      "cache_service_cacheservice",
+      "cache_service_cacheservice_get",
+      "cache_service_cacheservice_getversionedkey",
+      "gamification_controller_getgamificationprofile",
+      "gamification_controller_getleaderboard",
+      "src_controllers_biometric_controller_ts",
+      "src_controllers_student_analysis_controller_ts",
+      "src_controllers_student_gamification_controller_ts",
+      "src_middlewares_adminauth_ts",
+      "src_middlewares_auth_ts",
+      "src_services_cache_service_ts",
+      "test_cache_invalidation_testinvalidation",
+      "test_cache_invalidation_ts",
+      "verify_ts",
+      "verify_verify"
+    ],
+    "5": [
+      "auth_controller_forgotpassword",
+      "auth_controller_generateaccesstoken",
+      "auth_controller_generateandsendotp",
+      "auth_controller_generaterefreshtoken",
+      "auth_controller_generatetokenpair",
+      "auth_controller_getme",
+      "auth_controller_googlelogin",
+      "auth_controller_isemail",
+      "auth_controller_loginwithpassword",
+      "auth_controller_logoutall",
+      "auth_controller_refreshtoken",
+      "auth_controller_register",
+      "auth_controller_requestotp",
+      "auth_controller_resetpassword",
+      "auth_controller_testpushnotification",
+      "auth_controller_verifyotp",
+      "src_controllers_auth_controller_ts"
+    ],
+    "6": [
+      "firebase_initializefirebase",
+      "index_initializeredis",
+      "index_startserver",
+      "noderedis_createnoderedisclient",
+      "src_config_firebase_ts",
+      "src_config_redis_index_ts",
+      "src_config_redis_noderedis_ts",
+      "src_config_redis_upstash_ts",
+      "src_index_ts",
+      "upstash_createupstashclient"
+    ],
+    "7": [
+      "assessment_lock_service_gettestseriesmutationblock",
+      "assessment_lock_service_istestserieslivenow",
+      "question_controller_commitbulkquestions",
+      "question_controller_gettestseriesquestions",
+      "question_controller_previewbulkquestions",
+      "question_controller_updatequestion",
+      "sanitizer_sanitizecontent",
+      "src_controllers_admin_question_controller_ts",
+      "src_services_assessment_lock_service_ts",
+      "src_utils_sanitizer_ts"
+    ],
+    "8": [
+      "sms_createsmsprovider",
+      "sms_fast2smsprovider",
+      "sms_fast2smsprovider_constructor",
+      "sms_fast2smsprovider_sendotp",
+      "sms_firebasephoneprovider",
+      "sms_firebasephoneprovider_sendotp",
+      "sms_mocksmsprovider",
+      "sms_mocksmsprovider_sendotp",
+      "sms_sendsmsotp",
+      "src_utils_sms_ts"
+    ],
+    "9": [
+      "adminauth_controller_adminlogin",
+      "adminauth_controller_generateadmintoken",
+      "adminauth_controller_requestadminotp",
+      "adminauth_controller_seedfirstadmin",
+      "mailer_sendemailotp",
+      "src_controllers_adminauth_controller_ts",
+      "src_utils_mailer_ts"
+    ],
+    "10": [
+      "financial_controller_getallpayments",
+      "financial_controller_getallsubscriptions",
+      "financial_controller_getfinancialsummary",
+      "financial_controller_refundpayment",
+      "financial_controller_revokesubscription",
+      "financial_controller_verifypaymentsync",
+      "src_controllers_admin_financial_controller_ts"
+    ],
+    "11": [
+      "category_controller_createcategory",
+      "category_controller_deletecategory",
+      "category_controller_getallcategories",
+      "category_controller_updatecategory",
+      "src_controllers_admin_category_controller_ts",
+      "src_controllers_student_category_controller_ts"
+    ],
+    "12": [
+      "auth_schema_isemail",
+      "auth_schema_isphone",
+      "auth_schema_validate",
+      "src_schemas_auth_schema_ts"
+    ],
+    "13": [
+      "check_controller_check",
+      "check_controller_ts"
+    ],
+    "14": [
+      "clear_cache_clear",
+      "clear_cache_ts"
+    ],
+    "15": [
+      "audit_controller_getauditlogs",
+      "src_controllers_admin_audit_controller_ts"
+    ],
+    "16": [
+      "dashboard_controller_getdashboardstats",
+      "src_controllers_admin_dashboard_controller_ts"
+    ],
+    "17": [
+      "newsaggregator_initcronjobs",
+      "src_corn_newsaggregator_ts"
+    ],
+    "18": [
+      "premiumexperier_schedulepremiumexpirer",
+      "src_corn_premiumexperier_ts"
+    ],
+    "19": [
+      "seeddoubt_seeddoubt",
+      "src_utils_seeddoubt_js"
+    ],
+    "20": [
+      "prisma_config_ts"
+    ],
+    "21": [
+      "src_config_db_ts"
+    ],
+    "22": [
+      "src_routes_adminauth_routes_ts"
+    ],
+    "23": [
+      "src_routes_auth_routes_ts"
+    ],
+    "24": [
+      "src_routes_admin_audit_routes_ts"
+    ],
+    "25": [
+      "src_routes_admin_category_routes_ts"
+    ],
+    "26": [
+      "src_routes_admin_content_routes_ts"
+    ],
+    "27": [
+      "src_routes_admin_coupon_routes_ts"
+    ],
+    "28": [
+      "src_routes_admin_currentaffairs_routes_ts"
+    ],
+    "29": [
+      "src_routes_admin_dashboard_routes_ts"
+    ],
+    "30": [
+      "src_routes_admin_financial_routes_ts"
+    ],
+    "31": [
+      "src_routes_admin_gamification_routes_ts"
+    ],
+    "32": [
+      "src_routes_admin_moderation_routes_ts"
+    ],
+    "33": [
+      "src_routes_admin_notification_routes_ts"
+    ],
+    "34": [
+      "src_routes_admin_plan_routes_ts"
+    ],
+    "35": [
+      "src_routes_admin_question_routes_ts"
+    ],
+    "36": [
+      "src_routes_admin_study_routes_ts"
+    ],
+    "37": [
+      "src_routes_admin_user_routes_ts"
+    ],
+    "38": [
+      "src_routes_student_analysis_routes_ts"
+    ],
+    "39": [
+      "src_routes_student_category_routes_ts"
+    ],
+    "40": [
+      "src_routes_student_currentaffairs_routes_ts"
+    ],
+    "41": [
+      "src_routes_student_dashboard_routes_ts"
+    ],
+    "42": [
+      "src_routes_student_gamification_routes_ts"
+    ],
+    "43": [
+      "src_routes_student_home_routes_ts"
+    ],
+    "44": [
+      "src_routes_student_notification_routes_ts"
+    ],
+    "45": [
+      "src_routes_student_onboarding_routes_ts"
+    ],
+    "46": [
+      "src_routes_student_premium_routes_ts"
+    ],
+    "47": [
+      "src_routes_student_social_routes_ts"
+    ],
+    "48": [
+      "src_routes_student_study_routes_ts"
+    ],
+    "49": [
+      "src_routes_student_test_routes_ts"
+    ],
+    "50": [
+      "src_routes_student_utility_routes_ts"
+    ],
+    "51": [
+      "src_schemas_onboarding_schema_ts"
+    ],
+    "52": [
+      "src_workers_notification_worker_ts"
+    ],
+    "53": [
+      "src_workers_submission_worker_ts"
+    ]
+  },
+  "cohesion": {
+    "0": 0.1,
+    "1": 0.06,
+    "2": 0.08,
+    "3": 0.08,
+    "4": 0.09,
+    "5": 0.23,
+    "6": 0.2,
+    "7": 0.24,
+    "8": 0.22,
+    "9": 0.33,
+    "10": 0.29,
+    "11": 0.33,
+    "12": 0.5,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0
+  },
+  "gods": [
+    {
+      "id": "check_update",
+      "label": "update()",
+      "degree": 39
+    },
+    {
+      "id": "broadcast_broadcastcacheinvalidation",
+      "label": "broadcastCacheInvalidation()",
+      "degree": 22
+    },
+    {
+      "id": "notification_center_service_notificationcenterservice",
+      "label": "NotificationCenterService",
+      "degree": 9
+    },
+    {
+      "id": "auth_controller_generatetokenpair",
+      "label": "generateTokenPair()",
+      "degree": 8
+    },
+    {
+      "id": "auth_controller_isemail",
+      "label": "isEmail()",
+      "degree": 7
+    },
+    {
+      "id": "assessment_lock_service_gettestseriesmutationblock",
+      "label": "getTestSeriesMutationBlock()",
+      "degree": 7
+    },
+    {
+      "id": "notification_service_notificationservice",
+      "label": "NotificationService",
+      "degree": 7
+    },
+    {
+      "id": "verify_verify",
+      "label": "verify()",
+      "degree": 6
+    },
+    {
+      "id": "auth_controller_generateandsendotp",
+      "label": "generateAndSendOtp()",
+      "degree": 6
+    },
+    {
+      "id": "question_controller_updatequestion",
+      "label": "updateQuestion()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "verifyRnBiometricRegistration()",
+      "target": "update()",
+      "source_files": [
+        "F:\\AgniShiksha\\backend\\src\\controllers\\biometric.controller.ts",
+        "F:\\AgniShiksha\\backend\\check.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `verifyRnBiometricRegistration()` unexpectedly reaches hub `update()`"
+    },
+    {
+      "source": "setupOnboarding()",
+      "target": "update()",
+      "source_files": [
+        "F:\\AgniShiksha\\backend\\src\\controllers\\student\\onboarding.controller.ts",
+        "F:\\AgniShiksha\\backend\\check.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `setupOnboarding()` unexpectedly reaches hub `update()`"
+    },
+    {
+      "source": "completeOnboarding()",
+      "target": "update()",
+      "source_files": [
+        "F:\\AgniShiksha\\backend\\src\\controllers\\student\\onboarding.controller.ts",
+        "F:\\AgniShiksha\\backend\\check.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `completeOnboarding()` unexpectedly reaches hub `update()`"
+    },
+    {
+      "source": "handleRazorpayWebhook()",
+      "target": "update()",
+      "source_files": [
+        "F:\\AgniShiksha\\backend\\src\\controllers\\student\\premium.controller.ts",
+        "F:\\AgniShiksha\\backend\\check.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `handleRazorpayWebhook()` unexpectedly reaches hub `update()`"
+    },
+    {
+      "source": "syncAttemptAnswers()",
+      "target": "update()",
+      "source_files": [
+        "F:\\AgniShiksha\\backend\\src\\controllers\\student\\test.controller.ts",
+        "F:\\AgniShiksha\\backend\\check.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `syncAttemptAnswers()` unexpectedly reaches hub `update()`"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `update()` connect `Community 1` to `Community 0`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 7`, `Community 9`, `Community 11`?",
+      "why": "High betweenness centrality (0.306) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `CacheService` connect `Community 4` to `Community 0`, `Community 2`?",
+      "why": "High betweenness centrality (0.055) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `verify()` connect `Community 4` to `Community 5`?",
+      "why": "High betweenness centrality (0.035) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 38 inferred relationships involving `update()` (e.g. with `.invalidateTag()` and `adminLogin()`) actually correct?",
+      "why": "`update()` has 38 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 21 inferred relationships involving `broadcastCacheInvalidation()` (e.g. with `triggerNewsSync()` and `updateArticleStatus()`) actually correct?",
+      "why": "`broadcastCacheInvalidation()` has 21 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.1 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.06 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

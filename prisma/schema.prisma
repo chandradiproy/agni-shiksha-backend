@@ -59,7 +59,7 @@ model User {
   is_active         Boolean @default(true)
   is_banned         Boolean @default(false)
   ban_reason        String? @db.Text
-  forum_banned  Boolean  @default(false) // <-- NEW: Block forum access only
+  forum_banned      Boolean @default(false) // <-- NEW: Block forum access only
 
   device_tokens       Json    @default("[]")
   device_fingerprints Json    @default("[]")
@@ -74,21 +74,21 @@ model User {
   deleted_at DateTime? @db.Timestamptz
 
   // Relations
-  target_exam   Exam?          @relation("UserTargetExam", fields: [target_exam_id], references: [id])
-  premium_plan  Plan?          @relation("UserPremiumPlan", fields: [premium_plan_id], references: [id])
-  referred_by   User?          @relation("UserReferrals", fields: [referred_by_id], references: [id])
-  referrals     User[]         @relation("UserReferrals")
-  sessions      UserSession[]
-  credentials   UserCredential[] // Biometric/WebAuthn credentials
-  test_attempts TestAttempt[]
-  payments      Payment[]
-  subscriptions Subscription[]
-  doubts          Doubt[]        // <-- NEW RELATION
-  doubt_answers   DoubtAnswer[]  // <-- NEW RELATION
-  reports_made    Report[]       // <-- NEW RELATION
-  transactions  PaymentTransaction[] // New relation
-  bookmarks    Bookmark[]
-  notes        Note[]
+  target_exam           Exam?                 @relation("UserTargetExam", fields: [target_exam_id], references: [id])
+  premium_plan          Plan?                 @relation("UserPremiumPlan", fields: [premium_plan_id], references: [id])
+  referred_by           User?                 @relation("UserReferrals", fields: [referred_by_id], references: [id])
+  referrals             User[]                @relation("UserReferrals")
+  sessions              UserSession[]
+  credentials           UserCredential[] // Biometric/WebAuthn credentials
+  test_attempts         TestAttempt[]
+  payments              Payment[]
+  subscriptions         Subscription[]
+  doubts                Doubt[] // <-- NEW RELATION
+  doubt_answers         DoubtAnswer[] // <-- NEW RELATION
+  reports_made          Report[] // <-- NEW RELATION
+  transactions          PaymentTransaction[] // New relation
+  bookmarks             Bookmark[]
+  notes                 Note[]
   student_notifications StudentNotification[]
 
   @@index([phone_number])
@@ -118,12 +118,12 @@ model UserSession {
 model UserCredential {
   id            String   @id @default(uuid()) @db.Uuid
   user_id       String   @db.Uuid
-  credential_id String   @unique      // Base64URL-encoded credential ID from WebAuthn
-  public_key    Bytes                  // Stored COSE public key
-  counter       BigInt   @default(0)   // Signature counter for replay protection
+  credential_id String   @unique // Base64URL-encoded credential ID from WebAuthn
+  public_key    Bytes // Stored COSE public key
+  counter       BigInt   @default(0) // Signature counter for replay protection
   device_type   String?  @db.VarChar(50) // "singleDevice" or "multiDevice"
   backed_up     Boolean  @default(false)
-  transports    Json?                  // e.g., ["internal", "usb"]
+  transports    Json? // e.g., ["internal", "usb"]
   created_at    DateTime @default(now()) @db.Timestamptz
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -165,9 +165,9 @@ model Exam {
   updated_by      String?  @db.Uuid
   created_at      DateTime @default(now()) @db.Timestamptz
 
-  users          User[]          @relation("UserTargetExam")
-  test_series    TestSeries[]
-  questions      Question[]
+  users           User[]          @relation("UserTargetExam")
+  test_series     TestSeries[]
+  questions       Question[]
   study_plans     StudyPlan[]
   study_materials StudyMaterial[]
   creator         AdminUser?      @relation("ExamCreator", fields: [created_by], references: [id])
@@ -177,38 +177,41 @@ model Exam {
 }
 
 model TestSeries {
-  id                       String    @id @default(uuid()) @db.Uuid
-  exam_id                  String    @db.Uuid
-  title                    String    @db.VarChar(200)
-  description              String?   @db.Text
+  id                       String     @id @default(uuid()) @db.Uuid
+  exam_id                  String     @db.Uuid
+  title                    String     @db.VarChar(200)
+  description              String?    @db.Text
   type                     AccessTier @default(FREE)
-  test_type                TestType  @default(FULL_MOCK)
-  subject                  String?   @db.VarChar(100)
-  total_questions          Int       @db.SmallInt
-  duration_minutes         Int       @db.SmallInt
-  total_marks              Int       @db.SmallInt
-  negative_marking         Boolean   @default(false)
-  negative_marks_per_wrong Decimal   @default(0.00) @db.Decimal(3, 2)
-  difficulty               String    @db.VarChar(20)
-  is_all_india             Boolean   @default(false)
-  is_active                Boolean   @default(true)
-  is_scheduled             Boolean   @default(false)
-  is_published             Boolean   @default(false)
-  scheduled_at             DateTime? @db.Timestamptz
-  available_from           DateTime  @default(now()) @db.Timestamptz
-  available_until          DateTime? @db.Timestamptz
-  max_attempts             Int       @default(3) @db.SmallInt
-  show_solutions           Boolean   @default(true)
-  show_solutions_after     String    @default("immediate") @db.VarChar(20)
-  instructions             String?   @db.Text
-  sections                 Json      @default("[]")
+  test_type                TestType   @default(FULL_MOCK)
+  subject                  String?    @db.VarChar(100)
+  total_questions          Int        @db.SmallInt
+  duration_minutes         Int        @db.SmallInt
+  total_marks              Int        @db.SmallInt
+  negative_marking         Boolean    @default(false)
+  negative_marks_per_wrong Decimal    @default(0.00) @db.Decimal(3, 2)
+  difficulty               String     @db.VarChar(20)
+  is_all_india             Boolean    @default(false)
+  is_active                Boolean    @default(true)
+  is_scheduled             Boolean    @default(false)
+  is_published             Boolean    @default(false)
+  scheduled_at             DateTime?  @db.Timestamptz
+  available_from           DateTime   @default(now()) @db.Timestamptz
+  available_until          DateTime?  @db.Timestamptz
+  max_attempts             Int        @default(3) @db.SmallInt
+  show_solutions           Boolean    @default(true)
+  show_solutions_after     String     @default("immediate") @db.VarChar(20)
+  instructions             String?    @db.Text
+  sections                 Json       @default("[]")
   price_if_standalone      Int?
-  created_by               String?   @db.Uuid
-  updated_by               String?   @db.Uuid
-  created_at               DateTime  @default(now()) @db.Timestamptz
-  updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz
+  created_by               String?    @db.Uuid
+  updated_by               String?    @db.Uuid
+  created_at               DateTime   @default(now()) @db.Timestamptz
+  updated_at               DateTime   @default(now()) @updatedAt @db.Timestamptz
+
+  exam_category_id String? @db.Uuid // Relation to master table
 
   exam      Exam          @relation(fields: [exam_id], references: [id])
+  category  ExamCategory? @relation(fields: [exam_category_id], references: [id])
   questions Question[]
   attempts  TestAttempt[]
   creator   AdminUser?    @relation("TestCreator", fields: [created_by], references: [id])
@@ -308,7 +311,7 @@ model Plan {
   users         User[]         @relation("UserPremiumPlan")
   subscriptions Subscription[]
   payments      Payment[]
-  coupons       Coupon[]       // NEW: Relation to Coupons
+  coupons       Coupon[] // NEW: Relation to Coupons
 
   @@map("plans")
 }
@@ -334,8 +337,8 @@ model Coupon {
   id                 String    @id @default(uuid()) @db.Uuid
   code               String    @unique @db.VarChar(50)
   discount_type      String    @db.VarChar(20) // 'PERCENTAGE' or 'FLAT'
-  discount_value     Float     // e.g., 20 for 20%, or 500 for 500 INR flat off
-  max_uses           Int?      // Null means unlimited uses
+  discount_value     Float // e.g., 20 for 20%, or 500 for 500 INR flat off
+  max_uses           Int? // Null means unlimited uses
   current_uses       Int       @default(0)
   valid_from         DateTime  @default(now()) @db.Timestamptz
   valid_until        DateTime? @db.Timestamptz // Null means no expiry
@@ -364,8 +367,8 @@ model Payment {
   description        String?  @db.Text
   created_at         DateTime @default(now()) @db.Timestamptz
 
-  user User  @relation(fields: [user_id], references: [id])
-  plan Plan? @relation(fields: [plan_id], references: [id])
+  user   User    @relation(fields: [user_id], references: [id])
+  plan   Plan?   @relation(fields: [plan_id], references: [id])
   coupon Coupon? @relation(fields: [coupon_id], references: [id]) // NEW Relation
 
   @@index([user_id, created_at(sort: Desc)])
@@ -386,44 +389,44 @@ model AdminUser {
   password_hash String    @db.VarChar(255)
   is_active     Boolean   @default(true)
   last_login    DateTime? @db.Timestamptz
-  created_at    DateTime   @default(now()) @db.Timestamptz
-  updated_at    DateTime   @default(now()) @updatedAt @db.Timestamptz
+  created_at    DateTime  @default(now()) @db.Timestamptz
+  updated_at    DateTime  @default(now()) @updatedAt @db.Timestamptz
 
   created_questions Question[]
 
-    // Relations mapping to content creation/updates
+  // Relations mapping to content creation/updates
   //questions         Question[]
-  
-  created_exams     Exam[]          @relation("ExamCreator")
-  updated_exams     Exam[]          @relation("ExamUpdater")
-  
-  created_tests     TestSeries[]    @relation("TestCreator")
-  updated_tests     TestSeries[]    @relation("TestUpdater")
-  
+
+  created_exams Exam[] @relation("ExamCreator")
+  updated_exams Exam[] @relation("ExamUpdater")
+
+  created_tests TestSeries[] @relation("TestCreator")
+  updated_tests TestSeries[] @relation("TestUpdater")
+
   created_materials StudyMaterial[] @relation("MaterialCreator")
   updated_materials StudyMaterial[] @relation("MaterialUpdater")
-  
-  created_plans     StudyPlan[]     @relation("PlanCreator")
-  updated_plans     StudyPlan[]     @relation("PlanUpdater")
-  
-  created_articles  Article[]       @relation("ArticleCreator")
-  updated_articles  Article[]       @relation("ArticleUpdater")
-  notifications     Notification[]  @relation("NotificationCreator")
-  
-  audit_logs        AdminAuditLog[]
+
+  created_plans StudyPlan[] @relation("PlanCreator")
+  updated_plans StudyPlan[] @relation("PlanUpdater")
+
+  created_articles Article[]      @relation("ArticleCreator")
+  updated_articles Article[]      @relation("ArticleUpdater")
+  notifications    Notification[] @relation("NotificationCreator")
+
+  audit_logs AdminAuditLog[]
 
   @@map("admin_users")
 }
 
 model AdminAuditLog {
-  id          String   @id @default(uuid()) @db.Uuid
-  admin_id    String   @db.Uuid
-  action      String   @db.VarChar(100) // e.g., "BANNED_USER", "DELETED_TEST"
-  target_id   String   @db.Uuid         // The ID of the item affected
-  details     Json?                     // Additional metadata
-  created_at  DateTime @default(now()) @db.Timestamptz
+  id         String   @id @default(uuid()) @db.Uuid
+  admin_id   String   @db.Uuid
+  action     String   @db.VarChar(100) // e.g., "BANNED_USER", "DELETED_TEST"
+  target_id  String   @db.Uuid // The ID of the item affected
+  details    Json? // Additional metadata
+  created_at DateTime @default(now()) @db.Timestamptz
 
-  admin       AdminUser @relation(fields: [admin_id], references: [id])
+  admin AdminUser @relation(fields: [admin_id], references: [id])
 
   @@index([admin_id])
   @@index([action])
@@ -448,9 +451,8 @@ model Article {
   created_at   DateTime @default(now()) @db.Timestamptz
   updated_at   DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  creator      AdminUser? @relation("ArticleCreator", fields: [created_by], references: [id])
-  updater      AdminUser? @relation("ArticleUpdater", fields: [updated_by], references: [id])
-
+  creator AdminUser? @relation("ArticleCreator", fields: [created_by], references: [id])
+  updater AdminUser? @relation("ArticleUpdater", fields: [updated_by], references: [id])
 
   @@index([published_at(sort: Desc)])
   @@index([is_hidden])
@@ -458,21 +460,21 @@ model Article {
 }
 
 model Notification {
-  id             String   @id @default(uuid()) @db.Uuid
-  title          String   @db.VarChar(200)
-  body           String   @db.Text
-  type           String   @default("GENERAL") @db.VarChar(50)
-  audience_type  String   @default("ALL") @db.VarChar(30)
-  image_url      String?  @db.Text
-  deep_link      String?  @db.VarChar(500)
-  entity_type    String?  @db.VarChar(50)
-  entity_id      String?  @db.VarChar(100)
-  metadata       Json?    @default("{}")
-  created_by     String?  @db.Uuid
-  created_at     DateTime @default(now()) @db.Timestamptz
+  id            String   @id @default(uuid()) @db.Uuid
+  title         String   @db.VarChar(200)
+  body          String   @db.Text
+  type          String   @default("GENERAL") @db.VarChar(50)
+  audience_type String   @default("ALL") @db.VarChar(30)
+  image_url     String?  @db.Text
+  deep_link     String?  @db.VarChar(500)
+  entity_type   String?  @db.VarChar(50)
+  entity_id     String?  @db.VarChar(100)
+  metadata      Json?    @default("{}")
+  created_by    String?  @db.Uuid
+  created_at    DateTime @default(now()) @db.Timestamptz
 
-  creator        AdminUser?             @relation("NotificationCreator", fields: [created_by], references: [id])
-  recipients     StudentNotification[]
+  creator    AdminUser?            @relation("NotificationCreator", fields: [created_by], references: [id])
+  recipients StudentNotification[]
 
   @@index([created_at(sort: Desc)])
   @@index([type])
@@ -481,16 +483,16 @@ model Notification {
 }
 
 model StudentNotification {
-  id              String   @id @default(uuid()) @db.Uuid
-  user_id         String   @db.Uuid
-  notification_id String   @db.Uuid
-  is_read         Boolean  @default(false)
+  id              String    @id @default(uuid()) @db.Uuid
+  user_id         String    @db.Uuid
+  notification_id String    @db.Uuid
+  is_read         Boolean   @default(false)
   read_at         DateTime? @db.Timestamptz
-  delivered_at    DateTime @default(now()) @db.Timestamptz
-  created_at      DateTime @default(now()) @db.Timestamptz
+  delivered_at    DateTime  @default(now()) @db.Timestamptz
+  created_at      DateTime  @default(now()) @db.Timestamptz
 
-  user           User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  notification   Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, notification_id])
   @@index([user_id, is_read])
@@ -514,11 +516,10 @@ model StudyMaterial {
   created_at    DateTime @default(now()) @db.Timestamptz
   updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  exam          Exam     @relation(fields: [exam_id], references: [id])
-  tasks         StudyPlanTask[]
-  creator       AdminUser?      @relation("MaterialCreator", fields: [created_by], references: [id])
-  updater       AdminUser?      @relation("MaterialUpdater", fields: [updated_by], references: [id])
-
+  exam    Exam            @relation(fields: [exam_id], references: [id])
+  tasks   StudyPlanTask[]
+  creator AdminUser?      @relation("MaterialCreator", fields: [created_by], references: [id])
+  updater AdminUser?      @relation("MaterialUpdater", fields: [updated_by], references: [id])
 
   @@map("study_materials")
 }
@@ -533,10 +534,10 @@ model StudyPlan {
   created_at    DateTime @default(now()) @db.Timestamptz
   updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  exam          Exam     @relation(fields: [exam_id], references: [id])
-  tasks         StudyPlanTask[]
-  creator       AdminUser?      @relation("PlanCreator", fields: [created_by], references: [id])
-  updater       AdminUser?      @relation("PlanUpdater", fields: [updated_by], references: [id])
+  exam    Exam            @relation(fields: [exam_id], references: [id])
+  tasks   StudyPlanTask[]
+  creator AdminUser?      @relation("PlanCreator", fields: [created_by], references: [id])
+  updater AdminUser?      @relation("PlanUpdater", fields: [updated_by], references: [id])
 
   @@map("study_plans")
 }
@@ -551,12 +552,13 @@ model StudyPlanTask {
   created_at            DateTime @default(now()) @db.Timestamptz
   updated_at            DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  plan                  StudyPlan       @relation(fields: [study_plan_id], references: [id], onDelete: Cascade)
-  material              StudyMaterial?  @relation(fields: [reference_material_id], references: [id], onDelete: SetNull)
+  plan     StudyPlan      @relation(fields: [study_plan_id], references: [id], onDelete: Cascade)
+  material StudyMaterial? @relation(fields: [reference_material_id], references: [id], onDelete: SetNull)
 
   @@index([study_plan_id, day_number])
   @@map("study_plan_tasks")
 }
+
 model Doubt {
   id          String   @id @default(uuid()) @db.Uuid
   user_id     String   @db.Uuid
@@ -570,8 +572,8 @@ model Doubt {
   created_at  DateTime @default(now()) @db.Timestamptz
   updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  user        User          @relation(fields: [user_id], references: [id])
-  answers     DoubtAnswer[]
+  user    User          @relation(fields: [user_id], references: [id])
+  answers DoubtAnswer[]
 
   @@map("doubts")
 }
@@ -588,8 +590,8 @@ model DoubtAnswer {
   created_at  DateTime @default(now()) @db.Timestamptz
   updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz
 
-  doubt       Doubt    @relation(fields: [doubt_id], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [user_id], references: [id])
+  doubt Doubt @relation(fields: [doubt_id], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [user_id], references: [id])
 
   @@map("doubt_answers")
 }
@@ -603,7 +605,7 @@ model Report {
   status              String   @default("PENDING") @db.VarChar(50) // 'PENDING' or 'RESOLVED'
   created_at          DateTime @default(now()) @db.Timestamptz
 
-  reporter            User     @relation(fields: [reported_by_user_id], references: [id])
+  reporter User @relation(fields: [reported_by_user_id], references: [id])
 
   @@map("reports")
 }
@@ -613,43 +615,43 @@ model Report {
 // ==========================================
 
 model QuestConfig {
-  id             String   @id @default(uuid()) @db.Uuid
-  title          String   @db.VarChar(200)
-  description    String   @db.Text
-  xp_reward      Int      @db.SmallInt
-  target_action  String   @db.VarChar(50) // e.g., 'TAKE_TEST', 'READ_ARTICLE', 'ASK_DOUBT'
-  target_count   Int      @db.SmallInt
-  is_active      Boolean  @default(true)
-  created_at     DateTime @default(now()) @db.Timestamptz
-  updated_at     DateTime @default(now()) @updatedAt @db.Timestamptz
+  id            String   @id @default(uuid()) @db.Uuid
+  title         String   @db.VarChar(200)
+  description   String   @db.Text
+  xp_reward     Int      @db.SmallInt
+  target_action String   @db.VarChar(50) // e.g., 'TAKE_TEST', 'READ_ARTICLE', 'ASK_DOUBT'
+  target_count  Int      @db.SmallInt
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz
 
   @@map("quest_configs")
 }
 
 model BadgeConfig {
-  id                   String   @id @default(uuid()) @db.Uuid
-  badge_name           String   @db.VarChar(100)
-  description          String   @db.Text
-  icon_url             String   @db.Text
-  unlock_xp_threshold  Int
-  created_at           DateTime @default(now()) @db.Timestamptz
-  updated_at           DateTime @default(now()) @updatedAt @db.Timestamptz
+  id                  String   @id @default(uuid()) @db.Uuid
+  badge_name          String   @db.VarChar(100)
+  description         String   @db.Text
+  icon_url            String   @db.Text
+  unlock_xp_threshold Int
+  created_at          DateTime @default(now()) @db.Timestamptz
+  updated_at          DateTime @default(now()) @updatedAt @db.Timestamptz
 
   @@map("badge_configs")
 }
 
 model PaymentTransaction {
-  id               String   @id @default(uuid()) @db.Uuid
-  user_id          String   @db.Uuid
-  razorpay_order_id String   @unique @db.VarChar(255)
+  id                  String   @id @default(uuid()) @db.Uuid
+  user_id             String   @db.Uuid
+  razorpay_order_id   String   @unique @db.VarChar(255)
   razorpay_payment_id String?  @unique @db.VarChar(255)
-  amount           Decimal    @db.Decimal(10, 2)
-  currency         String   @default("INR") @db.VarChar(10)
-  status           String   @default("CREATED") @db.VarChar(50) // 'CREATED', 'SUCCESS', 'FAILED'
-  plan_id          String   @db.Uuid // UUID of the selected premium plan
-  error_message    String?  @db.Text
-  created_at       DateTime @default(now()) @db.Timestamptz
-  updated_at       DateTime @default(now()) @updatedAt @db.Timestamptz
+  amount              Decimal  @db.Decimal(10, 2)
+  currency            String   @default("INR") @db.VarChar(10)
+  status              String   @default("CREATED") @db.VarChar(50) // 'CREATED', 'SUCCESS', 'FAILED'
+  plan_id             String   @db.Uuid // UUID of the selected premium plan
+  error_message       String?  @db.Text
+  created_at          DateTime @default(now()) @db.Timestamptz
+  updated_at          DateTime @default(now()) @updatedAt @db.Timestamptz
 
   user User @relation(fields: [user_id], references: [id])
 
@@ -684,4 +686,21 @@ model Note {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("notes")
+}
+
+// ==========================================
+// MASTER TABLES
+// ==========================================
+model ExamCategory {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String   @unique @db.VarChar(100)
+  slug       String   @unique @db.VarChar(100)
+  icon_url   String?  @db.Text
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  test_series TestSeries[]
+
+  @@map("exam_categories")
 }

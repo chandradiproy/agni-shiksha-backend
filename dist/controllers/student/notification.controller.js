@@ -19,8 +19,9 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
         const unreadOnly = req.query.unreadOnly === 'true';
+        const bypassCache = req.headers['x-bypass-cache'] === 'true';
         const cacheScope = `inbox:${userId}:p${page}:l${limit}:u${unreadOnly}`;
-        const cached = yield cache_service_1.CacheService.get(CACHE_TAG, cacheScope);
+        const cached = bypassCache ? null : yield cache_service_1.CacheService.get(CACHE_TAG, cacheScope);
         if (cached) {
             console.log(`[NotifCache] HIT for ${cacheScope}`);
             return res.status(200).json(cached);
@@ -56,8 +57,9 @@ exports.getMyNotifications = getMyNotifications;
 const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.id;
+        const bypassCache = req.headers['x-bypass-cache'] === 'true';
         const cacheScope = `unread:${userId}`;
-        const cached = yield cache_service_1.CacheService.get(CACHE_TAG, cacheScope);
+        const cached = bypassCache ? null : yield cache_service_1.CacheService.get(CACHE_TAG, cacheScope);
         if (cached) {
             console.log(`[NotifCache] HIT for ${cacheScope}`);
             return res.status(200).json(cached);

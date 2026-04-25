@@ -232,7 +232,7 @@ export const verifyLogin = async (req: Request, res: Response) => {
     // Check user status
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, full_name: true, email: true, is_active: true, is_banned: true, is_premium: true }
+      select: { id: true, full_name: true, email: true, phone_number: true, avatar_id: true, level: true, xp_total: true, is_active: true, is_banned: true, is_premium: true, onboarding_completed: true }
     });
 
     if (!user || !user.is_active) {
@@ -281,7 +281,12 @@ export const verifyLogin = async (req: Request, res: Response) => {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
+        phone_number: user.phone_number,
+        avatar_id: user.avatar_id,
+        level: user.level,
+        xp_total: user.xp_total,
         is_premium: user.is_premium,
+        onboarding_completed: user.onboarding_completed
       }
     });
   } catch (error) {
@@ -390,7 +395,7 @@ export const verifyRnBiometricLogin = async (req: Request, res: Response) => {
     // 4. Log the user in
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, full_name: true, email: true, is_active: true, is_banned: true, is_premium: true }
+      select: { id: true, full_name: true, email: true, phone_number: true, avatar_id: true, level: true, xp_total: true, is_active: true, is_banned: true, is_premium: true, onboarding_completed: true }
     });
 
     if (!user || !user.is_active || user.is_banned) {
