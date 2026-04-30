@@ -23,7 +23,8 @@ export const getExams = async (req: Request, res: Response) => {
           category: true,
           thumbnail_url: true,
           description: true,
-          display_order: true
+          display_order: true,
+          approximate_exam_date: true
         },
         orderBy: { display_order: 'asc' }
       });

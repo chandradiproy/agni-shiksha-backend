@@ -5,6 +5,7 @@ import { requireAuth } from '../../middlewares/auth';
 import { 
   toggleBookmark, 
   getBookmarks, 
+  checkBookmarks,
   createNote, 
   getNotes, 
   updateNote, 
@@ -18,6 +19,7 @@ router.use(requireAuth);
 
 // Bookmarks
 router.get('/bookmarks', getBookmarks);
+router.get('/bookmarks/check', checkBookmarks);
 router.post('/bookmarks/toggle', toggleBookmark);
 
 // Notes

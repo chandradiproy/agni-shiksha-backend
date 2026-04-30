@@ -79,6 +79,7 @@ export const updateProfileSchema = z.object({
   study_language: z.enum(['en', 'hi', 'both']).optional(),
   prep_level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   daily_study_hours: z.number().min(0).max(24).optional(),
+  daily_goal_minutes: z.number().int().min(5).max(480).optional(),
 }).refine(
   (data) => Object.keys(data).length > 0,
   { message: 'At least one field must be provided for update' }

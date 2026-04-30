@@ -39,7 +39,8 @@ model User {
   exam_date         DateTime? @db.Date
   study_language    String    @default("hindi") @db.VarChar(20)
   prep_level        String    @default("beginner") @db.VarChar(20)
-  daily_study_hours Int       @default(2) @db.SmallInt
+  daily_study_hours   Int @default(2) @db.SmallInt
+  daily_goal_minutes  Int @default(30) @db.SmallInt
 
   is_premium         Boolean   @default(false)
   premium_plan_id    String?   @db.Uuid
@@ -161,6 +162,7 @@ model Exam {
   display_order   Int      @db.SmallInt
   subjects        Json     @default("[]")
   exam_pattern    Json     @default("{}")
+  approximate_exam_date DateTime? @db.Date
   created_by      String?  @db.Uuid
   updated_by      String?  @db.Uuid
   created_at      DateTime @default(now()) @db.Timestamptz

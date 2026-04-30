@@ -15,10 +15,8 @@ export const getMyNotifications = async (req: Request, res: Response) => {
     const cacheScope = `inbox:${userId}:p${page}:l${limit}:u${unreadOnly}`;
     const cached = bypassCache ? null : await CacheService.get<any>(CACHE_TAG, cacheScope);
     if (cached) {
-      console.log(`[NotifCache] HIT for ${cacheScope}`);
       return res.status(200).json(cached);
     }
-    console.log(`[NotifCache] MISS for ${cacheScope}`);
 
     const result = await NotificationCenterService.getStudentInbox({
       userId,
@@ -57,10 +55,8 @@ export const getUnreadNotificationCount = async (req: Request, res: Response) =>
     const cacheScope = `unread:${userId}`;
     const cached = bypassCache ? null : await CacheService.get<any>(CACHE_TAG, cacheScope);
     if (cached) {
-      console.log(`[NotifCache] HIT for ${cacheScope}`);
       return res.status(200).json(cached);
     }
-    console.log(`[NotifCache] MISS for ${cacheScope}`);
 
     const result = await NotificationCenterService.getStudentInbox({
       userId,

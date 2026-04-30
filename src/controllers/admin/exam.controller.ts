@@ -13,7 +13,7 @@ const CACHE_TAG = 'exams';
 // Create a new Exam category (e.g., SSC CGL)
 export const createExam = async (req: Request, res: Response) => {
   try {
-    const { name, slug, category, conducting_body, description, display_order } = req.body;
+    const { name, slug, category, conducting_body, description, display_order, approximate_exam_date } = req.body;
     const adminId = (req as any).admin.id as string;
 
     if (!name || !slug || !category || !conducting_body) {
@@ -30,6 +30,7 @@ export const createExam = async (req: Request, res: Response) => {
         display_order: display_order || 1,
         subjects: req.body.subjects || [],
         exam_pattern: req.body.exam_pattern || {},
+        approximate_exam_date: approximate_exam_date ? new Date(approximate_exam_date) : null,
         created_by: adminId
       }
     });
@@ -120,9 +121,17 @@ export const updateExam = async (req: Request, res: Response) => {
       return res.status(mutationBlock.status).json({ error: mutationBlock.error });
     }
 
+    // Coerce approximate_exam_date string to Date if present
+    const updateData = { ...req.body, updated_by: adminId };
+    if (updateData.approximate_exam_date !== undefined) {
+      updateData.approximate_exam_date = updateData.approximate_exam_date
+        ? new Date(updateData.approximate_exam_date)
+        : null;
+    }
+
     const updatedExam = await prisma.exam.update({
       where: { id: id as string },
-      data: {...req.body, updated_by: adminId }
+      data: updateData
     });
 
     // Audit Log

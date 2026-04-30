@@ -98,7 +98,7 @@ app.use('/api/v1/student/study', studyRoutes);
 app.use('/api/v1/student/articles', currentAffairsRoutes);
 app.use('/api/v1/student/social', socialRoutes);
 app.use('/api/v1/student/premium', premiumRoutes);
-app.use('/api/v1/student/utilities', utilityRoutes);
+app.use('/api/v1/student/utility', utilityRoutes);
 app.use('/api/v1/student/home', homeRoutes);
 app.use('/api/v1/student/notifications', studentNotificationRoutes);
 app.use('/api/v1/student/categories', studentCategoryRoutes); // <-- Mount Student Categories

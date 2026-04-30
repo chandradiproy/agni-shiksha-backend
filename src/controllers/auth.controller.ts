@@ -449,6 +449,8 @@ export const getMe = async (req: Request, res: Response) => {
         is_active: true,
         onboarding_completed: true,
         referral_code: true,
+        daily_goal_minutes: true,
+        study_language: true,
         created_at: true,
         // Explicitly excluded: password_hash, is_banned (internal), deleted_at
       }
@@ -474,7 +476,7 @@ export const updateMe = async (req: Request, res: Response) => {
 
     // Only allow updating specific safe fields
     const allowedFields: Record<string, any> = {};
-    const updatableFields = ['full_name', 'avatar_id', 'target_exam_id', 'study_language', 'prep_level', 'daily_study_hours'];
+    const updatableFields = ['full_name', 'avatar_id', 'target_exam_id', 'study_language', 'prep_level', 'daily_study_hours', 'daily_goal_minutes'];
 
     for (const field of updatableFields) {
       if (req.body[field] !== undefined) {
@@ -484,6 +486,17 @@ export const updateMe = async (req: Request, res: Response) => {
 
     if (Object.keys(allowedFields).length === 0) {
       return res.status(400).json({ error: 'No updatable fields provided' });
+    }
+
+    // Validate target_exam_id FK exists before attempting update
+    if (allowedFields.target_exam_id) {
+      const examExists = await prisma.exam.findUnique({
+        where: { id: allowedFields.target_exam_id },
+        select: { id: true },
+      });
+      if (!examExists) {
+        return res.status(400).json({ error: 'Invalid target exam — the selected exam does not exist' });
+      }
     }
 
     const updatedUser = await prisma.user.update({
@@ -496,10 +509,15 @@ export const updateMe = async (req: Request, res: Response) => {
         full_name: true,
         avatar_id: true,
         target_exam_id: true,
+        study_language: true,
+        daily_goal_minutes: true,
         is_premium: true,
         xp_total: true,
         level: true,
+        gems: true,
         current_streak: true,
+        longest_streak: true,
+        onboarding_completed: true,
       }
     });
 

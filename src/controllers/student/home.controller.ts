@@ -46,7 +46,13 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
         xp_total: true,
         level: true,
         is_premium: true,
-        target_exam_id: true
+        target_exam_id: true,
+        target_exam: {
+          select: {
+            name: true,
+            approximate_exam_date: true,
+          }
+        }
       }
     });
 
@@ -198,7 +204,9 @@ export const getHomeDashboard = async (req: Request, res: Response) => {
           current_streak: newStreak, // Send the newly calculated streak instantly
           xp_total: user.xp_total,
           level: user.level,
-          is_premium: user.is_premium
+          is_premium: user.is_premium,
+          target_exam_name: user.target_exam?.name ?? null,
+          approximate_exam_date: user.target_exam?.approximate_exam_date ?? null,
         },
         dashboard: {
           daily_quizzes: dailyQuizzes,
