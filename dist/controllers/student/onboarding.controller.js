@@ -36,7 +36,8 @@ const getExams = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     category: true,
                     thumbnail_url: true,
                     description: true,
-                    display_order: true
+                    display_order: true,
+                    approximate_exam_date: true
                 },
                 orderBy: { display_order: 'asc' }
             });

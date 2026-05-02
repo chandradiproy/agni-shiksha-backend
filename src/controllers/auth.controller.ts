@@ -13,8 +13,16 @@ import * as admin from 'firebase-admin';
 import { NotificationService } from '../services/notification.service';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'fallback_access_secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'fallback_refresh_secret';
+
+if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+  throw new Error(
+    'FATAL: JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set in .env. ' +
+    'Server will not start with insecure fallback secrets.'
+  );
+}
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 // ==========================================
 // TOKEN GENERATION (Access + Refresh Pair)
@@ -40,24 +48,46 @@ const generateTokenPair = async (userId: string, req: Request) => {
   const salt = await bcrypt.genSalt(10);
   const tokenHash = await bcrypt.hash(refreshToken, salt);
 
-  // Store session (fire-and-forget for performance — login response should be instant)
-  setImmediate(async () => {
-    try {
-      await prisma.userSession.create({
-        data: {
-          user_id: userId,
-          jwt_token_hash: tokenHash,
-          device_fingerprint: req.body.device_fingerprint || 'unknown',
-          device_name: req.body.device_name || null,
-          ip_address: req.ip || req.socket.remoteAddress || 'unknown',
-          user_agent: req.headers['user-agent'] || null,
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        }
-      });
-    } catch (e) {
-      console.error('[Session Create Error]:', e);
-    }
+  // Enforce: 1 active session at a time
+  // Find oldest active session and revoke it, then notify that device via FCM
+  const existingSession = await prisma.userSession.findFirst({
+    where: { user_id: userId, is_active: true, expires_at: { gt: new Date() } },
+    orderBy: { created_at: 'asc' },
+    include: { user: { select: { device_tokens: true } } }
   });
+
+  if (existingSession) {
+    // 1. Revoke old session
+    await prisma.userSession.update({
+      where: { id: existingSession.id },
+      data: { is_active: false }
+    });
+
+    // 2. Send FCM silent push to old device
+    const oldTokens = existingSession.user?.device_tokens as string[] || [];
+    if (oldTokens.length > 0) {
+      setImmediate(() =>
+        NotificationService.sendSessionEvictedNotification(oldTokens, userId)
+      );
+    }
+  }
+
+  // Store session directly (removed setImmediate to avoid race condition)
+  try {
+    await prisma.userSession.create({
+      data: {
+        user_id: userId,
+        jwt_token_hash: tokenHash,
+        device_fingerprint: req.body.device_fingerprint || 'unknown',
+        device_name: req.body.device_name || null,
+        ip_address: req.ip || req.socket.remoteAddress || 'unknown',
+        user_agent: req.headers['user-agent'] || null,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      }
+    });
+  } catch (e) {
+    console.error('[Session Create Error]:', e);
+  }
 
   return { accessToken, refreshToken };
 };
@@ -68,6 +98,13 @@ const isEmail = (id: string) => id.includes('@');
 // HELPER: Generate & Send OTP
 // ==========================================
 const generateAndSendOtp = async (id: string): Promise<void> => {
+  const cooldownKey = `otp_cooldown:${id}`;
+  const onCooldown = await redisClient.exists(cooldownKey);
+  if (onCooldown) {
+    throw { status: 429, message: 'Please wait 60 seconds before requesting another OTP.' };
+  }
+  await redisClient.setEx(cooldownKey, 60, '1');
+
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   // Save to Redis for 5 minutes
@@ -90,7 +127,10 @@ export const requestOtp = async (req: Request, res: Response) => {
     await generateAndSendOtp(id);
 
     res.status(200).json({ success: true, message: 'OTP sent successfully' });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status === 429) {
+      return res.status(429).json({ error: error.message });
+    }
     console.error('Request OTP Error:', error);
     res.status(500).json({ error: 'Failed to send OTP' });
   }
@@ -103,11 +143,22 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { id, password, full_name, otp } = req.body;
 
+    const attemptKey = `otp_attempts:${id}`;
+    const attempts = parseInt(await redisClient.get(attemptKey) || '0');
+    if (attempts >= 5) {
+      return res.status(429).json({
+        error: 'Too many failed attempts. Please request a new OTP.',
+        retry_after_seconds: await redisClient.ttl(attemptKey)
+      });
+    }
+
     // Verify OTP
     const storedOtp = await redisClient.get(`otp:${id}`);
     if (!storedOtp || storedOtp !== otp) {
+      await redisClient.setEx(attemptKey, 600, (attempts + 1).toString());
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
+    await redisClient.del(attemptKey);
 
     // Check if user already exists
     const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
@@ -177,8 +228,28 @@ export const loginWithPassword = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Account has been suspended' });
     }
 
+    const lockKey  = `login_lock:${user.id}`;
+    const failKey  = `login_fail:${user.id}`;
+    const isLocked = await redisClient.exists(lockKey);
+    if (isLocked) {
+      const ttl = await redisClient.ttl(lockKey);
+      return res.status(423).json({
+        error: `Account temporarily locked. Try again in ${Math.ceil(ttl / 60)} minute(s).`
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!isMatch) {
+      const fails = parseInt(await redisClient.get(failKey) || '0') + 1;
+      if (fails >= 5) {
+        await redisClient.setEx(lockKey, 900, '1'); // 15 min lock
+        await redisClient.del(failKey);
+      } else {
+        await redisClient.setEx(failKey, 900, fails.toString());
+      }
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+    await redisClient.del(failKey);
 
     const tokens = await generateTokenPair(user.id, req);
 
@@ -212,10 +283,21 @@ export const verifyOtp = async (req: Request, res: Response) => {
   try {
     const { id, otp } = req.body;
 
+    const attemptKey = `otp_attempts:${id}`;
+    const attempts = parseInt(await redisClient.get(attemptKey) || '0');
+    if (attempts >= 5) {
+      return res.status(429).json({
+        error: 'Too many failed attempts. Please request a new OTP.',
+        retry_after_seconds: await redisClient.ttl(attemptKey)
+      });
+    }
+
     const storedOtp = await redisClient.get(`otp:${id}`);
     if (!storedOtp || storedOtp !== otp) {
+      await redisClient.setEx(attemptKey, 600, (attempts + 1).toString());
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
+    await redisClient.del(attemptKey);
 
     const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
 
@@ -547,7 +629,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
     await generateAndSendOtp(id);
 
     res.status(200).json({ success: true, message: 'If an account exists, an OTP has been sent' });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status === 429) {
+      return res.status(429).json({ error: error.message });
+    }
     console.error('Forgot Password Error:', error);
     res.status(500).json({ error: 'Failed to process forgot password request' });
   }
@@ -560,11 +645,22 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { id, otp, new_password } = req.body;
 
+    const attemptKey = `otp_attempts:${id}`;
+    const attempts = parseInt(await redisClient.get(attemptKey) || '0');
+    if (attempts >= 5) {
+      return res.status(429).json({
+        error: 'Too many failed attempts. Please request a new OTP.',
+        retry_after_seconds: await redisClient.ttl(attemptKey)
+      });
+    }
+
     // Verify OTP
     const storedOtp = await redisClient.get(`otp:${id}`);
     if (!storedOtp || storedOtp !== otp) {
+      await redisClient.setEx(attemptKey, 600, (attempts + 1).toString());
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
+    await redisClient.del(attemptKey);
 
     // Find user
     const idQuery = isEmail(id) ? { email: id } : { phone_number: id };
@@ -705,5 +801,42 @@ export const testPushNotification = async (req: Request, res: Response) => {
   } catch (err) {
     console.error('Test Push Error:', err);
     res.status(500).json({ error: 'Failed to send test push.' });
+  }
+};
+
+/**
+ * LIGHTWEIGHT SESSION CHECK
+ * Used by mobile app to check if their fingerprint is still the "active" one
+ * without requiring full JWT auth if they just want to know status.
+ */
+export const getSessionStatus = async (req: Request, res: Response) => {
+  try {
+    const fingerprint = req.headers['x-device-fingerprint'] as string || req.query.fingerprint as string;
+    const userId = req.query.userId as string;
+
+    if (!fingerprint || !userId) {
+      return res.status(400).json({ error: 'fingerprint and userId required' });
+    }
+
+    const activeSession = await prisma.userSession.findFirst({
+      where: { 
+        user_id: userId, 
+        is_active: true, 
+        expires_at: { gt: new Date() } 
+      },
+      select: { device_fingerprint: true }
+    });
+
+    if (!activeSession) {
+      return res.json({ status: 'no_session', is_active: false });
+    }
+
+    const isMatch = activeSession.device_fingerprint === fingerprint;
+    res.json({ 
+      status: isMatch ? 'active' : 'evicted', 
+      is_active: isMatch 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check session status' });
   }
 };

@@ -46,55 +46,71 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.redis = void 0;
+exports.redisProxy = exports.redis = void 0;
 exports.initializeRedis = initializeRedis;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 let redisInstance = null;
+let initPromise = null;
 const provider = process.env.REDIS_PROVIDER || 'node';
 console.log(`[Redis] Selected provider: ${provider}`);
 function initializeRedis() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            if (provider === 'upstash') {
-                console.log('[Redis] Using Upstash REST provider');
-                const { createUpstashClient } = yield Promise.resolve().then(() => __importStar(require('./upstash')));
-                redisInstance = createUpstashClient();
+        if (initPromise)
+            return initPromise;
+        initPromise = (() => __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (provider === 'upstash') {
+                    console.log('[Redis] Using Upstash REST provider');
+                    const { createUpstashClient } = yield Promise.resolve().then(() => __importStar(require('./upstash')));
+                    redisInstance = createUpstashClient();
+                }
+                else {
+                    console.log('[Redis] Using Node/Azure Socket provider');
+                    const { createNodeRedisClient } = yield Promise.resolve().then(() => __importStar(require('./nodeRedis')));
+                    redisInstance = yield createNodeRedisClient();
+                }
+                console.log('[Redis] Initialization completed successfully');
+                return redisInstance;
             }
-            else {
-                console.log('[Redis] Using Node/Azure Socket provider');
-                const { createNodeRedisClient } = yield Promise.resolve().then(() => __importStar(require('./nodeRedis')));
-                redisInstance = yield createNodeRedisClient();
+            catch (error) {
+                console.error('[Redis] Initialization failed:', error);
+                process.exit(1);
             }
-            console.log('[Redis] Initialization completed successfully');
-            return redisInstance;
-        }
-        catch (error) {
-            console.error('[Redis] Initialization failed:', error);
-            process.exit(1);
-        }
+        }))();
+        return initPromise;
     });
 }
-// 2. Cast the Proxy to the Interface to fix the TS2339 error
-const redisProxy = new Proxy({}, {
-    get: (target, prop) => {
-        if (!redisInstance) {
-            throw new Error('[Redis] Client accessed before initialization completed!');
+/**
+ * PROXY HANDLER
+ * This allows us to export a 'redis' object that doesn't exist yet.
+ * It will wait for initialization if a method is called before it's ready.
+ */
+const createRedisProxy = () => {
+    return new Proxy({}, {
+        get: (target, prop) => {
+            // If the property is being accessed, return a function that waits for initialization
+            return (...args) => __awaiter(void 0, void 0, void 0, function* () {
+                if (!redisInstance) {
+                    // If not initialized, wait for the initPromise
+                    // If initPromise doesn't exist, we might be in a weird state where it was never called
+                    if (!initPromise) {
+                        console.warn(`[Redis] Method ${String(prop)} called before initializeRedis(). Starting init now...`);
+                        yield initializeRedis();
+                    }
+                    else {
+                        yield initPromise;
+                    }
+                }
+                const method = redisInstance[prop];
+                if (typeof method !== 'function') {
+                    return method;
+                }
+                return method.bind(redisInstance)(...args);
+            });
         }
-        const property = redisInstance[prop];
-        return typeof property === 'function' ? property.bind(redisInstance) : property;
-    }
-});
-exports.redis = new Proxy({}, {
-    get: (target, prop) => {
-        if (!redisInstance) {
-            throw new Error('[Redis] Client accessed before initialization completed!');
-        }
-        const property = redisInstance[prop];
-        if (typeof property === 'function') {
-            return property.bind(redisInstance);
-        }
-        return property;
-    },
-});
-exports.default = redisProxy;
+    });
+};
+exports.redis = createRedisProxy();
+exports.redisProxy = exports.redis; // For backward compatibility
+exports.default = exports.redis;

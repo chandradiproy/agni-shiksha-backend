@@ -24,7 +24,7 @@ const CACHE_TAG = 'exams';
 // Create a new Exam category (e.g., SSC CGL)
 const createExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, slug, category, conducting_body, description, display_order } = req.body;
+        const { name, slug, category, conducting_body, description, display_order, approximate_exam_date } = req.body;
         const adminId = req.admin.id;
         if (!name || !slug || !category || !conducting_body) {
             return res.status(400).json({ error: 'Name, slug, category, and conducting_body are required' });
@@ -39,6 +39,7 @@ const createExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 display_order: display_order || 1,
                 subjects: req.body.subjects || [],
                 exam_pattern: req.body.exam_pattern || {},
+                approximate_exam_date: approximate_exam_date ? new Date(approximate_exam_date) : null,
                 created_by: adminId
             }
         });
@@ -122,9 +123,16 @@ const updateExam = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (mutationBlock) {
             return res.status(mutationBlock.status).json({ error: mutationBlock.error });
         }
+        // Coerce approximate_exam_date string to Date if present
+        const updateData = Object.assign(Object.assign({}, req.body), { updated_by: adminId });
+        if (updateData.approximate_exam_date !== undefined) {
+            updateData.approximate_exam_date = updateData.approximate_exam_date
+                ? new Date(updateData.approximate_exam_date)
+                : null;
+        }
         const updatedExam = yield db_1.default.exam.update({
             where: { id: id },
-            data: Object.assign(Object.assign({}, req.body), { updated_by: adminId })
+            data: updateData
         });
         // Audit Log
         yield db_1.default.adminAuditLog.create({

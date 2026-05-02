@@ -63,6 +63,7 @@ exports.updateProfileSchema = zod_1.z.object({
     study_language: zod_1.z.enum(['en', 'hi', 'both']).optional(),
     prep_level: zod_1.z.enum(['beginner', 'intermediate', 'advanced']).optional(),
     daily_study_hours: zod_1.z.number().min(0).max(24).optional(),
+    daily_goal_minutes: zod_1.z.number().int().min(5).max(480).optional(),
 }).refine((data) => Object.keys(data).length > 0, { message: 'At least one field must be provided for update' });
 exports.forgotPasswordSchema = zod_1.z.object({
     id: idField,

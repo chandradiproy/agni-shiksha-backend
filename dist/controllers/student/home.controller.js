@@ -34,6 +34,7 @@ const fetchWithVersionedCache = (tag_1, scope_1, ttlSeconds_1, fetcher_1, ...arg
     }
 });
 const getHomeDashboard = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
     try {
         const t0 = performance.now();
         const userId = req.user.id;
@@ -51,7 +52,13 @@ const getHomeDashboard = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 xp_total: true,
                 level: true,
                 is_premium: true,
-                target_exam_id: true
+                target_exam_id: true,
+                target_exam: {
+                    select: {
+                        name: true,
+                        approximate_exam_date: true,
+                    }
+                }
             }
         });
         if (!user)
@@ -177,7 +184,9 @@ const getHomeDashboard = (req, res) => __awaiter(void 0, void 0, void 0, functio
                     current_streak: newStreak, // Send the newly calculated streak instantly
                     xp_total: user.xp_total,
                     level: user.level,
-                    is_premium: user.is_premium
+                    is_premium: user.is_premium,
+                    target_exam_name: (_b = (_a = user.target_exam) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : null,
+                    approximate_exam_date: (_d = (_c = user.target_exam) === null || _c === void 0 ? void 0 : _c.approximate_exam_date) !== null && _d !== void 0 ? _d : null,
                 },
                 dashboard: {
                     daily_quizzes: dailyQuizzes,

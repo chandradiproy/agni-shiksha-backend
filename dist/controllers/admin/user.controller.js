@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.revokeAllUserSessions = exports.toggleForumBan = exports.toggleBanStudent = exports.getAllStudents = void 0;
+exports.hardDeleteUser = exports.revokeAllUserSessions = exports.toggleForumBan = exports.toggleBanStudent = exports.getAllStudents = void 0;
 const db_1 = __importDefault(require("../../config/db"));
 // Get all students (with optional search and pagination)
 const getAllStudents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -177,3 +177,41 @@ const revokeAllUserSessions = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.revokeAllUserSessions = revokeAllUserSessions;
+// Permanently Delete User (Super Admin Only)
+const hardDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Only super_admin can hard-delete
+        if (req.admin.role !== 'super_admin') {
+            return res.status(403).json({ error: 'Only super admins can permanently delete accounts.' });
+        }
+        const id = req.params.id;
+        const { confirmation } = req.body; // Must equal the user's email
+        const user = yield db_1.default.user.findUnique({ where: { id }, select: { email: true } });
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        if (confirmation !== user.email) {
+            return res.status(400).json({ error: 'Confirmation email does not match. Deletion aborted.' });
+        }
+        yield db_1.default.$transaction([
+            db_1.default.userSession.deleteMany({ where: { user_id: id } }),
+            db_1.default.testAttempt.deleteMany({ where: { user_id: id } }),
+            // Add other related data deletions here if not covered by DB cascade
+            db_1.default.user.delete({ where: { id } }),
+        ]);
+        // Log to audit trail
+        yield db_1.default.adminAuditLog.create({
+            data: {
+                admin_id: req.admin.id,
+                action: 'HARD_DELETE_USER',
+                target_id: id,
+                details: { email: user.email }
+            }
+        });
+        res.json({ success: true, message: 'User permanently deleted.' });
+    }
+    catch (error) {
+        console.error('Hard Delete User Error:', error);
+        res.status(500).json({ error: 'Failed to permanently delete user.' });
+    }
+});
+exports.hardDeleteUser = hardDeleteUser;

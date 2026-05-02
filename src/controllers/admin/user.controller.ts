@@ -174,3 +174,44 @@ export const revokeAllUserSessions = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to globally revoke user sessions.' });
   }
 };
+
+// Permanently Delete User (Super Admin Only)
+export const hardDeleteUser = async (req: Request, res: Response) => {
+  try {
+    // Only super_admin can hard-delete
+    if ((req as any).admin.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Only super admins can permanently delete accounts.' });
+    }
+
+    const id = req.params.id as string;
+    const { confirmation } = req.body; // Must equal the user's email
+
+    const user = await prisma.user.findUnique({ where: { id }, select: { email: true } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (confirmation !== user.email) {
+      return res.status(400).json({ error: 'Confirmation email does not match. Deletion aborted.' });
+    }
+
+    await prisma.$transaction([
+      prisma.userSession.deleteMany({ where: { user_id: id } }),
+      prisma.testAttempt.deleteMany({ where: { user_id: id } }),
+      // Add other related data deletions here if not covered by DB cascade
+      prisma.user.delete({ where: { id } }),
+    ]);
+
+    // Log to audit trail
+    await prisma.adminAuditLog.create({
+      data: {
+        admin_id: (req as any).admin.id,
+        action: 'HARD_DELETE_USER',
+        target_id: id,
+        details: { email: user.email }
+      }
+    });
+
+    res.json({ success: true, message: 'User permanently deleted.' });
+  } catch (error) {
+    console.error('Hard Delete User Error:', error);
+    res.status(500).json({ error: 'Failed to permanently delete user.' });
+  }
+};

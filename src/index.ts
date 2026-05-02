@@ -38,6 +38,7 @@ import studentCategoryRoutes from './routes/student/category.routes'; // <-- Imp
 
 import { initCronJobs } from './corn/newsAggregator'; // <-- Import Cron Job init
 import { schedulePremiumExpirer } from './corn/premiumExperier'; // <-- Import Premium Expirer Cron Job
+import { startSessionCleanupCron } from './cron/sessionCleanup'; // <-- Import Session Cleanup Cron Job
 import initializeFirebase from './config/firebase';
 import './workers/notification.worker';
 
@@ -46,6 +47,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+app.set('trust proxy', 1);
 app.disable('etag');
 
 // Middleware
@@ -112,6 +114,7 @@ app.get('/health', (req, res) => {
 
 initCronJobs(); // Start the background jobs for news aggregation
 schedulePremiumExpirer(); // Start the cron job to expire premium subscriptions
+startSessionCleanupCron(); // Start the cron job to clean up stale sessions
 
 // Initialize Server
 const startServer = async () => {

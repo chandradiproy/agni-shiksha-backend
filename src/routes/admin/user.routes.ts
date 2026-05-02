@@ -2,7 +2,7 @@
 
 import { Router } from 'express';
 import { requireAdmin } from '../../middlewares/adminAuth';
-import { getAllStudents, toggleBanStudent, toggleForumBan, revokeAllUserSessions } from '../../controllers/admin/user.controller';
+import { getAllStudents, toggleBanStudent, toggleForumBan, revokeAllUserSessions, hardDeleteUser } from '../../controllers/admin/user.controller';
 
 const router = Router();
 
@@ -17,5 +17,8 @@ router.put('/:userId/forum-ban', requireAdmin, toggleForumBan);
 
 // Revoke all remote sessions for security
 router.put('/:id/revoke-sessions', requireAdmin, revokeAllUserSessions);
+
+// Permanently delete user
+router.delete('/:id', requireAdmin, hardDeleteUser);
 
 export default router;

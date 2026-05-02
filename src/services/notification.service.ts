@@ -142,4 +142,21 @@ export class NotificationService {
       console.error('FCM Unsubscribe Error:', error);
     }
   }
+
+  static async sendSessionEvictedNotification(tokens: string[], targetUserId: string) {
+    // FCM silent data push (no banner) — app handles forced logout
+    try {
+      await admin.messaging().sendEachForMulticast({
+        tokens,
+        data: { 
+          type: 'SESSION_EVICTED', 
+          message: 'Logged in on another device',
+          targetUserId 
+        },
+        android: { priority: 'high' }
+      });
+    } catch (error) {
+      console.error('Session Evicted Notification Error:', error);
+    }
+  }
 }

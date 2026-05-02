@@ -30,6 +30,10 @@ const createUpstashClient = () => {
             }),
             setEx: (key, seconds, value) => __awaiter(void 0, void 0, void 0, function* () { return client.set(key, value, { ex: seconds }); }),
             del: (key) => __awaiter(void 0, void 0, void 0, function* () { return client.del(key); }),
+            exists: (key) => __awaiter(void 0, void 0, void 0, function* () { return client.exists(key); }),
+            ttl: (key) => __awaiter(void 0, void 0, void 0, function* () { return client.ttl(key); }),
+            sendCommand: (args) => __awaiter(void 0, void 0, void 0, function* () { return client.call(args[0], ...args.slice(1)); }),
+            incr: (key) => __awaiter(void 0, void 0, void 0, function* () { return client.incr(key); }),
         };
     }
     catch (error) {

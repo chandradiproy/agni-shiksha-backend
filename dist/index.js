@@ -50,11 +50,13 @@ const onboarding_routes_1 = __importDefault(require("./routes/student/onboarding
 const category_routes_2 = __importDefault(require("./routes/student/category.routes")); // <-- Import Student Category Routes
 const newsAggregator_1 = require("./corn/newsAggregator"); // <-- Import Cron Job init
 const premiumExperier_1 = require("./corn/premiumExperier"); // <-- Import Premium Expirer Cron Job
+const sessionCleanup_1 = require("./cron/sessionCleanup"); // <-- Import Session Cleanup Cron Job
 const firebase_1 = __importDefault(require("./config/firebase"));
 require("./workers/notification.worker");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
+app.set('trust proxy', 1);
 app.disable('etag');
 // Middleware
 // Rate limiter
@@ -102,7 +104,7 @@ app.use('/api/v1/student/study', study_routes_2.default);
 app.use('/api/v1/student/articles', currentAffairs_routes_2.default);
 app.use('/api/v1/student/social', social_routes_1.default);
 app.use('/api/v1/student/premium', premium_routes_1.default);
-app.use('/api/v1/student/utilities', utility_routes_1.default);
+app.use('/api/v1/student/utility', utility_routes_1.default);
 app.use('/api/v1/student/home', home_routes_1.default);
 app.use('/api/v1/student/notifications', notification_routes_2.default);
 app.use('/api/v1/student/categories', category_routes_2.default); // <-- Mount Student Categories
@@ -113,6 +115,7 @@ app.get('/health', (req, res) => {
 });
 (0, newsAggregator_1.initCronJobs)(); // Start the background jobs for news aggregation
 (0, premiumExperier_1.schedulePremiumExpirer)(); // Start the cron job to expire premium subscriptions
+(0, sessionCleanup_1.startSessionCleanupCron)(); // Start the cron job to clean up stale sessions
 // Initialize Server
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {

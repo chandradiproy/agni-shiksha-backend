@@ -18,8 +18,11 @@ import {
   resetPassword,
   deleteAccount,
   updateFcmToken,
-  testPushNotification
+  testPushNotification,
+  getSessionStatus
 } from '../controllers/auth.controller';
+
+import { otpRateLimit, loginRateLimit, registrationRateLimit } from '../middlewares/rateLimiter';
 
 import{  getLoginOptions,
   verifyLogin,
@@ -50,14 +53,15 @@ const router = Router();
 // ==========================================
 // PUBLIC ROUTES (No auth required)
 // ==========================================
-router.post('/request-otp', validate(requestOtpSchema), requestOtp);
+router.post('/request-otp', otpRateLimit, validate(requestOtpSchema), requestOtp);
 router.post('/verify-otp', validate(verifyOtpSchema), verifyOtp);
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), loginWithPassword);
+router.post('/register', registrationRateLimit, validate(registerSchema), register);
+router.post('/login', loginRateLimit, validate(loginSchema), loginWithPassword);
 router.post('/google', validate(googleLoginSchema), googleLogin);
 router.post('/refresh-token', validate(refreshTokenSchema), refreshToken);
-router.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
+router.post('/forgot-password', otpRateLimit, validate(forgotPasswordSchema), forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
+router.get('/session-status', getSessionStatus); // Light check, no auth required
 
 // ==========================================
 // BIOMETRIC ROUTES (Mixed auth)

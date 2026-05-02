@@ -9,7 +9,7 @@
       "source_file": "check.ts",
       "source_location": "L1",
       "id": "check_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "check.ts"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "check.ts",
       "source_location": "L4",
       "id": "check_update",
-      "community": 3,
+      "community": 1,
       "norm_label": "update()"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "prisma.config.ts",
       "source_location": "L1",
       "id": "prisma_config_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "prisma.config.ts"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "test-cache-invalidation.ts",
       "source_location": "L1",
       "id": "test_cache_invalidation_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "test-cache-invalidation.ts"
     },
     {
@@ -81,7 +81,7 @@
       "source_file": "test-cache-invalidation.ts",
       "source_location": "L4",
       "id": "test_cache_invalidation_testinvalidation",
-      "community": 4,
+      "community": 2,
       "norm_label": "testinvalidation()"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "verify.ts",
       "source_location": "L1",
       "id": "verify_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "verify.ts"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "verify.ts",
       "source_location": "L3",
       "id": "verify_verify",
-      "community": 4,
+      "community": 2,
       "norm_label": "verify()"
     },
     {
@@ -108,16 +108,16 @@
       "source_file": "src\\index.ts",
       "source_location": "L1",
       "id": "src_index_ts",
-      "community": 6,
+      "community": 5,
       "norm_label": "index.ts"
     },
     {
       "label": "startServer()",
       "file_type": "code",
       "source_file": "src\\index.ts",
-      "source_location": "L117",
+      "source_location": "L120",
       "id": "index_startserver",
-      "community": 6,
+      "community": 5,
       "norm_label": "startserver()"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "src\\config\\db.ts",
       "source_location": "L1",
       "id": "src_config_db_ts",
-      "community": 21,
+      "community": 22,
       "norm_label": "db.ts"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "src\\config\\firebase.ts",
       "source_location": "L1",
       "id": "src_config_firebase_ts",
-      "community": 6,
+      "community": 5,
       "norm_label": "firebase.ts"
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "src\\config\\firebase.ts",
       "source_location": "L14",
       "id": "firebase_initializefirebase",
-      "community": 6,
+      "community": 5,
       "norm_label": "initializefirebase()"
     },
     {
@@ -153,17 +153,26 @@
       "source_file": "src\\config\\redis\\index.ts",
       "source_location": "L1",
       "id": "src_config_redis_index_ts",
-      "community": 6,
+      "community": 5,
       "norm_label": "index.ts"
     },
     {
       "label": "initializeRedis()",
       "file_type": "code",
       "source_file": "src\\config\\redis\\index.ts",
-      "source_location": "L20",
+      "source_location": "L23",
       "id": "index_initializeredis",
-      "community": 6,
+      "community": 5,
       "norm_label": "initializeredis()"
+    },
+    {
+      "label": "createRedisProxy()",
+      "file_type": "code",
+      "source_file": "src\\config\\redis\\index.ts",
+      "source_location": "L53",
+      "id": "index_createredisproxy",
+      "community": 5,
+      "norm_label": "createredisproxy()"
     },
     {
       "label": "nodeRedis.ts",
@@ -171,7 +180,7 @@
       "source_file": "src\\config\\redis\\nodeRedis.ts",
       "source_location": "L1",
       "id": "src_config_redis_noderedis_ts",
-      "community": 6,
+      "community": 5,
       "norm_label": "noderedis.ts"
     },
     {
@@ -180,7 +189,7 @@
       "source_file": "src\\config\\redis\\nodeRedis.ts",
       "source_location": "L5",
       "id": "noderedis_createnoderedisclient",
-      "community": 6,
+      "community": 5,
       "norm_label": "createnoderedisclient()"
     },
     {
@@ -189,7 +198,7 @@
       "source_file": "src\\config\\redis\\upstash.ts",
       "source_location": "L1",
       "id": "src_config_redis_upstash_ts",
-      "community": 6,
+      "community": 5,
       "norm_label": "upstash.ts"
     },
     {
@@ -198,7 +207,7 @@
       "source_file": "src\\config\\redis\\upstash.ts",
       "source_location": "L5",
       "id": "upstash_createupstashclient",
-      "community": 6,
+      "community": 5,
       "norm_label": "createupstashclient()"
     },
     {
@@ -207,7 +216,7 @@
       "source_file": "src\\controllers\\adminAuth.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_adminauth_controller_ts",
-      "community": 9,
+      "community": 8,
       "norm_label": "adminauth.controller.ts"
     },
     {
@@ -216,7 +225,7 @@
       "source_file": "src\\controllers\\adminAuth.controller.ts",
       "source_location": "L13",
       "id": "adminauth_controller_generateadmintoken",
-      "community": 9,
+      "community": 8,
       "norm_label": "generateadmintoken()"
     },
     {
@@ -225,7 +234,7 @@
       "source_file": "src\\controllers\\adminAuth.controller.ts",
       "source_location": "L18",
       "id": "adminauth_controller_requestadminotp",
-      "community": 9,
+      "community": 8,
       "norm_label": "requestadminotp()"
     },
     {
@@ -234,7 +243,7 @@
       "source_file": "src\\controllers\\adminAuth.controller.ts",
       "source_location": "L50",
       "id": "adminauth_controller_adminlogin",
-      "community": 9,
+      "community": 8,
       "norm_label": "adminlogin()"
     },
     {
@@ -243,7 +252,7 @@
       "source_file": "src\\controllers\\adminAuth.controller.ts",
       "source_location": "L102",
       "id": "adminauth_controller_seedfirstadmin",
-      "community": 9,
+      "community": 8,
       "norm_label": "seedfirstadmin()"
     },
     {
@@ -252,188 +261,197 @@
       "source_file": "src\\controllers\\auth.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_auth_controller_ts",
-      "community": 5,
+      "community": 2,
       "norm_label": "auth.controller.ts"
     },
     {
       "label": "generateAccessToken()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L23",
+      "source_location": "L31",
       "id": "auth_controller_generateaccesstoken",
-      "community": 5,
+      "community": 2,
       "norm_label": "generateaccesstoken()"
     },
     {
       "label": "generateRefreshToken()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L27",
+      "source_location": "L35",
       "id": "auth_controller_generaterefreshtoken",
-      "community": 5,
+      "community": 2,
       "norm_label": "generaterefreshtoken()"
     },
     {
       "label": "generateTokenPair()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L35",
+      "source_location": "L43",
       "id": "auth_controller_generatetokenpair",
-      "community": 5,
+      "community": 2,
       "norm_label": "generatetokenpair()"
     },
     {
       "label": "isEmail()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L65",
+      "source_location": "L95",
       "id": "auth_controller_isemail",
-      "community": 5,
+      "community": 2,
       "norm_label": "isemail()"
     },
     {
       "label": "generateAndSendOtp()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L70",
+      "source_location": "L100",
       "id": "auth_controller_generateandsendotp",
-      "community": 5,
+      "community": 2,
       "norm_label": "generateandsendotp()"
     },
     {
       "label": "requestOtp()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L86",
+      "source_location": "L123",
       "id": "auth_controller_requestotp",
-      "community": 5,
+      "community": 2,
       "norm_label": "requestotp()"
     },
     {
       "label": "register()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L102",
+      "source_location": "L142",
       "id": "auth_controller_register",
-      "community": 5,
+      "community": 2,
       "norm_label": "register()"
     },
     {
       "label": "loginWithPassword()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L161",
+      "source_location": "L212",
       "id": "auth_controller_loginwithpassword",
-      "community": 5,
+      "community": 2,
       "norm_label": "loginwithpassword()"
     },
     {
       "label": "verifyOtp()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L211",
+      "source_location": "L282",
       "id": "auth_controller_verifyotp",
-      "community": 5,
+      "community": 2,
       "norm_label": "verifyotp()"
     },
     {
       "label": "googleLogin()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L267",
+      "source_location": "L349",
       "id": "auth_controller_googlelogin",
-      "community": 5,
+      "community": 2,
       "norm_label": "googlelogin()"
     },
     {
       "label": "refreshToken()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L320",
+      "source_location": "L402",
       "id": "auth_controller_refreshtoken",
-      "community": 5,
+      "community": 2,
       "norm_label": "refreshtoken()"
     },
     {
       "label": "logout()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L382",
+      "source_location": "L464",
       "id": "auth_controller_logout",
-      "community": 3,
+      "community": 1,
       "norm_label": "logout()"
     },
     {
       "label": "logoutAll()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L404",
+      "source_location": "L486",
       "id": "auth_controller_logoutall",
-      "community": 5,
+      "community": 2,
       "norm_label": "logoutall()"
     },
     {
       "label": "getMe()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L427",
+      "source_location": "L509",
       "id": "auth_controller_getme",
-      "community": 5,
+      "community": 2,
       "norm_label": "getme()"
     },
     {
       "label": "updateMe()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L473",
+      "source_location": "L555",
       "id": "auth_controller_updateme",
-      "community": 3,
+      "community": 1,
       "norm_label": "updateme()"
     },
     {
       "label": "forgotPassword()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L534",
+      "source_location": "L616",
       "id": "auth_controller_forgotpassword",
-      "community": 5,
+      "community": 2,
       "norm_label": "forgotpassword()"
     },
     {
       "label": "resetPassword()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L559",
+      "source_location": "L644",
       "id": "auth_controller_resetpassword",
-      "community": 5,
+      "community": 2,
       "norm_label": "resetpassword()"
     },
     {
       "label": "deleteAccount()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L606",
+      "source_location": "L702",
       "id": "auth_controller_deleteaccount",
-      "community": 3,
+      "community": 1,
       "norm_label": "deleteaccount()"
     },
     {
       "label": "updateFcmToken()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L649",
+      "source_location": "L745",
       "id": "auth_controller_updatefcmtoken",
-      "community": 2,
+      "community": 3,
       "norm_label": "updatefcmtoken()"
     },
     {
       "label": "testPushNotification()",
       "file_type": "code",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L678",
+      "source_location": "L774",
       "id": "auth_controller_testpushnotification",
-      "community": 5,
+      "community": 2,
       "norm_label": "testpushnotification()"
+    },
+    {
+      "label": "getSessionStatus()",
+      "file_type": "code",
+      "source_file": "src\\controllers\\auth.controller.ts",
+      "source_location": "L812",
+      "id": "auth_controller_getsessionstatus",
+      "community": 2,
+      "norm_label": "getsessionstatus()"
     },
     {
       "label": "biometric.controller.ts",
@@ -441,7 +459,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_biometric_controller_ts",
-      "community": 4,
+      "community": 1,
       "norm_label": "biometric.controller.ts"
     },
     {
@@ -450,7 +468,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L27",
       "id": "biometric_controller_getregistrationoptions",
-      "community": 4,
+      "community": 1,
       "norm_label": "getregistrationoptions()"
     },
     {
@@ -459,7 +477,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L78",
       "id": "biometric_controller_verifyregistration",
-      "community": 4,
+      "community": 1,
       "norm_label": "verifyregistration()"
     },
     {
@@ -468,7 +486,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L140",
       "id": "biometric_controller_getloginoptions",
-      "community": 4,
+      "community": 1,
       "norm_label": "getloginoptions()"
     },
     {
@@ -477,7 +495,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L184",
       "id": "biometric_controller_verifylogin",
-      "community": 4,
+      "community": 1,
       "norm_label": "verifylogin()"
     },
     {
@@ -486,7 +504,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L303",
       "id": "biometric_controller_verifyrnbiometricregistration",
-      "community": 4,
+      "community": 1,
       "norm_label": "verifyrnbiometricregistration()"
     },
     {
@@ -495,7 +513,7 @@
       "source_file": "src\\controllers\\biometric.controller.ts",
       "source_location": "L344",
       "id": "biometric_controller_verifyrnbiometriclogin",
-      "community": 4,
+      "community": 2,
       "norm_label": "verifyrnbiometriclogin()"
     },
     {
@@ -747,7 +765,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_admin_financial_controller_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "financial.controller.ts"
     },
     {
@@ -756,7 +774,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L14",
       "id": "financial_controller_getallpayments",
-      "community": 8,
+      "community": 9,
       "norm_label": "getallpayments()"
     },
     {
@@ -765,7 +783,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L61",
       "id": "financial_controller_getallsubscriptions",
-      "community": 8,
+      "community": 9,
       "norm_label": "getallsubscriptions()"
     },
     {
@@ -774,7 +792,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L107",
       "id": "financial_controller_getfinancialsummary",
-      "community": 8,
+      "community": 9,
       "norm_label": "getfinancialsummary()"
     },
     {
@@ -783,7 +801,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L151",
       "id": "financial_controller_verifypaymentsync",
-      "community": 8,
+      "community": 9,
       "norm_label": "verifypaymentsync()"
     },
     {
@@ -792,7 +810,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L241",
       "id": "financial_controller_revokesubscription",
-      "community": 8,
+      "community": 9,
       "norm_label": "revokesubscription()"
     },
     {
@@ -801,7 +819,7 @@
       "source_file": "src\\controllers\\admin\\financial.controller.ts",
       "source_location": "L321",
       "id": "financial_controller_refundpayment",
-      "community": 8,
+      "community": 9,
       "norm_label": "refundpayment()"
     },
     {
@@ -810,7 +828,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_admin_gamification_controller_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "gamification.controller.ts"
     },
     {
@@ -819,7 +837,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L10",
       "id": "gamification_controller_createquest",
-      "community": 3,
+      "community": 1,
       "norm_label": "createquest()"
     },
     {
@@ -828,7 +846,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L63",
       "id": "gamification_controller_getquests",
-      "community": 3,
+      "community": 1,
       "norm_label": "getquests()"
     },
     {
@@ -837,7 +855,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L76",
       "id": "gamification_controller_updatequest",
-      "community": 3,
+      "community": 1,
       "norm_label": "updatequest()"
     },
     {
@@ -846,7 +864,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L114",
       "id": "gamification_controller_deletequest",
-      "community": 3,
+      "community": 1,
       "norm_label": "deletequest()"
     },
     {
@@ -855,7 +873,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L148",
       "id": "gamification_controller_createbadge",
-      "community": 3,
+      "community": 1,
       "norm_label": "createbadge()"
     },
     {
@@ -864,7 +882,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L190",
       "id": "gamification_controller_getbadges",
-      "community": 3,
+      "community": 1,
       "norm_label": "getbadges()"
     },
     {
@@ -873,7 +891,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L203",
       "id": "gamification_controller_updatebadge",
-      "community": 3,
+      "community": 1,
       "norm_label": "updatebadge()"
     },
     {
@@ -882,7 +900,7 @@
       "source_file": "src\\controllers\\admin\\gamification.controller.ts",
       "source_location": "L237",
       "id": "gamification_controller_deletebadge",
-      "community": 3,
+      "community": 1,
       "norm_label": "deletebadge()"
     },
     {
@@ -891,7 +909,7 @@
       "source_file": "src\\controllers\\admin\\moderation.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_admin_moderation_controller_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "moderation.controller.ts"
     },
     {
@@ -900,7 +918,7 @@
       "source_file": "src\\controllers\\admin\\moderation.controller.ts",
       "source_location": "L7",
       "id": "moderation_controller_getmoderationdoubts",
-      "community": 3,
+      "community": 1,
       "norm_label": "getmoderationdoubts()"
     },
     {
@@ -909,7 +927,7 @@
       "source_file": "src\\controllers\\admin\\moderation.controller.ts",
       "source_location": "L59",
       "id": "moderation_controller_updatedoubtstatus",
-      "community": 3,
+      "community": 1,
       "norm_label": "updatedoubtstatus()"
     },
     {
@@ -918,7 +936,7 @@
       "source_file": "src\\controllers\\admin\\moderation.controller.ts",
       "source_location": "L94",
       "id": "moderation_controller_deletedoubt",
-      "community": 3,
+      "community": 1,
       "norm_label": "deletedoubt()"
     },
     {
@@ -927,7 +945,7 @@
       "source_file": "src\\controllers\\admin\\moderation.controller.ts",
       "source_location": "L122",
       "id": "moderation_controller_deletedoubtanswer",
-      "community": 3,
+      "community": 1,
       "norm_label": "deletedoubtanswer()"
     },
     {
@@ -936,7 +954,7 @@
       "source_file": "src\\controllers\\admin\\notification.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_admin_notification_controller_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "notification.controller.ts"
     },
     {
@@ -945,7 +963,7 @@
       "source_file": "src\\controllers\\admin\\notification.controller.ts",
       "source_location": "L6",
       "id": "notification_controller_createnotification",
-      "community": 2,
+      "community": 3,
       "norm_label": "createnotification()"
     },
     {
@@ -954,7 +972,7 @@
       "source_file": "src\\controllers\\admin\\notification.controller.ts",
       "source_location": "L61",
       "id": "notification_controller_getnotifications",
-      "community": 2,
+      "community": 3,
       "norm_label": "getnotifications()"
     },
     {
@@ -1080,7 +1098,7 @@
       "source_file": "src\\controllers\\student\\study.controller.ts",
       "source_location": "L56",
       "id": "study_controller_getstudymaterials",
-      "community": 1,
+      "community": 4,
       "norm_label": "getstudymaterials()"
     },
     {
@@ -1116,7 +1134,7 @@
       "source_file": "src\\controllers\\student\\study.controller.ts",
       "source_location": "L10",
       "id": "study_controller_getstudyplans",
-      "community": 1,
+      "community": 4,
       "norm_label": "getstudyplans()"
     },
     {
@@ -1215,7 +1233,7 @@
       "source_file": "src\\controllers\\admin\\user.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_admin_user_controller_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "user.controller.ts"
     },
     {
@@ -1224,7 +1242,7 @@
       "source_file": "src\\controllers\\admin\\user.controller.ts",
       "source_location": "L9",
       "id": "user_controller_getallstudents",
-      "community": 3,
+      "community": 1,
       "norm_label": "getallstudents()"
     },
     {
@@ -1233,7 +1251,7 @@
       "source_file": "src\\controllers\\admin\\user.controller.ts",
       "source_location": "L66",
       "id": "user_controller_togglebanstudent",
-      "community": 3,
+      "community": 1,
       "norm_label": "togglebanstudent()"
     },
     {
@@ -1242,7 +1260,7 @@
       "source_file": "src\\controllers\\admin\\user.controller.ts",
       "source_location": "L107",
       "id": "user_controller_toggleforumban",
-      "community": 3,
+      "community": 1,
       "norm_label": "toggleforumban()"
     },
     {
@@ -1251,8 +1269,17 @@
       "source_file": "src\\controllers\\admin\\user.controller.ts",
       "source_location": "L143",
       "id": "user_controller_revokeallusersessions",
-      "community": 3,
+      "community": 1,
       "norm_label": "revokeallusersessions()"
+    },
+    {
+      "label": "hardDeleteUser()",
+      "file_type": "code",
+      "source_file": "src\\controllers\\admin\\user.controller.ts",
+      "source_location": "L179",
+      "id": "user_controller_harddeleteuser",
+      "community": 1,
+      "norm_label": "harddeleteuser()"
     },
     {
       "label": "analysis.controller.ts",
@@ -1260,7 +1287,7 @@
       "source_file": "src\\controllers\\student\\analysis.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_analysis_controller_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "analysis.controller.ts"
     },
     {
@@ -1269,7 +1296,7 @@
       "source_file": "src\\controllers\\student\\analysis.controller.ts",
       "source_location": "L10",
       "id": "analysis_controller_gettestanalysis",
-      "community": 4,
+      "community": 2,
       "norm_label": "gettestanalysis()"
     },
     {
@@ -1278,7 +1305,7 @@
       "source_file": "src\\controllers\\student\\analysis.controller.ts",
       "source_location": "L80",
       "id": "analysis_controller_gettestreview",
-      "community": 4,
+      "community": 2,
       "norm_label": "gettestreview()"
     },
     {
@@ -1296,7 +1323,7 @@
       "source_file": "src\\controllers\\student\\currentAffairs.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_currentaffairs_controller_ts",
-      "community": 1,
+      "community": 4,
       "norm_label": "currentaffairs.controller.ts"
     },
     {
@@ -1305,7 +1332,7 @@
       "source_file": "src\\controllers\\student\\currentAffairs.controller.ts",
       "source_location": "L10",
       "id": "currentaffairs_controller_getarticles",
-      "community": 1,
+      "community": 4,
       "norm_label": "getarticles()"
     },
     {
@@ -1314,7 +1341,7 @@
       "source_file": "src\\controllers\\student\\currentAffairs.controller.ts",
       "source_location": "L73",
       "id": "currentaffairs_controller_getarticledetails",
-      "community": 1,
+      "community": 4,
       "norm_label": "getarticledetails()"
     },
     {
@@ -1323,7 +1350,7 @@
       "source_file": "src\\controllers\\student\\dashboard.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_dashboard_controller_ts",
-      "community": 1,
+      "community": 4,
       "norm_label": "dashboard.controller.ts"
     },
     {
@@ -1332,7 +1359,7 @@
       "source_file": "src\\controllers\\student\\dashboard.controller.ts",
       "source_location": "L7",
       "id": "dashboard_controller_fetchwithversionedcache",
-      "community": 1,
+      "community": 4,
       "norm_label": "fetchwithversionedcache()"
     },
     {
@@ -1341,7 +1368,7 @@
       "source_file": "src\\controllers\\student\\dashboard.controller.ts",
       "source_location": "L30",
       "id": "dashboard_controller_gethomedashboard",
-      "community": 1,
+      "community": 4,
       "norm_label": "gethomedashboard()"
     },
     {
@@ -1350,7 +1377,7 @@
       "source_file": "src\\controllers\\student\\dashboard.controller.ts",
       "source_location": "L114",
       "id": "dashboard_controller_getaiinsights",
-      "community": 1,
+      "community": 4,
       "norm_label": "getaiinsights()"
     },
     {
@@ -1359,7 +1386,7 @@
       "source_file": "src\\controllers\\student\\gamification.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_gamification_controller_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "gamification.controller.ts"
     },
     {
@@ -1368,7 +1395,7 @@
       "source_file": "src\\controllers\\student\\gamification.controller.ts",
       "source_location": "L10",
       "id": "gamification_controller_getleaderboard",
-      "community": 4,
+      "community": 2,
       "norm_label": "getleaderboard()"
     },
     {
@@ -1377,7 +1404,7 @@
       "source_file": "src\\controllers\\student\\gamification.controller.ts",
       "source_location": "L53",
       "id": "gamification_controller_getgamificationprofile",
-      "community": 4,
+      "community": 2,
       "norm_label": "getgamificationprofile()"
     },
     {
@@ -1386,7 +1413,7 @@
       "source_file": "src\\controllers\\student\\home.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_home_controller_ts",
-      "community": 1,
+      "community": 4,
       "norm_label": "home.controller.ts"
     },
     {
@@ -1395,7 +1422,7 @@
       "source_file": "src\\controllers\\student\\home.controller.ts",
       "source_location": "L7",
       "id": "home_controller_fetchwithversionedcache",
-      "community": 1,
+      "community": 4,
       "norm_label": "fetchwithversionedcache()"
     },
     {
@@ -1404,7 +1431,7 @@
       "source_file": "src\\controllers\\student\\home.controller.ts",
       "source_location": "L30",
       "id": "home_controller_gethomedashboard",
-      "community": 1,
+      "community": 4,
       "norm_label": "gethomedashboard()"
     },
     {
@@ -1413,7 +1440,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_notification_controller_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "notification.controller.ts"
     },
     {
@@ -1422,7 +1449,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L7",
       "id": "notification_controller_getmynotifications",
-      "community": 2,
+      "community": 3,
       "norm_label": "getmynotifications()"
     },
     {
@@ -1431,7 +1458,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L50",
       "id": "notification_controller_getunreadnotificationcount",
-      "community": 2,
+      "community": 3,
       "norm_label": "getunreadnotificationcount()"
     },
     {
@@ -1440,7 +1467,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L82",
       "id": "notification_controller_marknotificationasread",
-      "community": 2,
+      "community": 3,
       "norm_label": "marknotificationasread()"
     },
     {
@@ -1449,7 +1476,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L106",
       "id": "notification_controller_markallnotificationsasread",
-      "community": 2,
+      "community": 3,
       "norm_label": "markallnotificationsasread()"
     },
     {
@@ -1458,7 +1485,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L128",
       "id": "notification_controller_registerdevicetoken",
-      "community": 2,
+      "community": 3,
       "norm_label": "registerdevicetoken()"
     },
     {
@@ -1467,7 +1494,7 @@
       "source_file": "src\\controllers\\student\\notification.controller.ts",
       "source_location": "L154",
       "id": "notification_controller_unregisterdevicetoken",
-      "community": 2,
+      "community": 3,
       "norm_label": "unregisterdevicetoken()"
     },
     {
@@ -1476,7 +1503,7 @@
       "source_file": "src\\controllers\\student\\onboarding.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_onboarding_controller_ts",
-      "community": 1,
+      "community": 4,
       "norm_label": "onboarding.controller.ts"
     },
     {
@@ -1485,7 +1512,7 @@
       "source_file": "src\\controllers\\student\\onboarding.controller.ts",
       "source_location": "L9",
       "id": "onboarding_controller_getexams",
-      "community": 1,
+      "community": 4,
       "norm_label": "getexams()"
     },
     {
@@ -1494,7 +1521,7 @@
       "source_file": "src\\controllers\\student\\onboarding.controller.ts",
       "source_location": "L44",
       "id": "onboarding_controller_getexamsubjects",
-      "community": 1,
+      "community": 4,
       "norm_label": "getexamsubjects()"
     },
     {
@@ -1503,7 +1530,7 @@
       "source_file": "src\\controllers\\student\\onboarding.controller.ts",
       "source_location": "L82",
       "id": "onboarding_controller_setuponboarding",
-      "community": 1,
+      "community": 4,
       "norm_label": "setuponboarding()"
     },
     {
@@ -1512,7 +1539,7 @@
       "source_file": "src\\controllers\\student\\onboarding.controller.ts",
       "source_location": "L133",
       "id": "onboarding_controller_completeonboarding",
-      "community": 1,
+      "community": 4,
       "norm_label": "completeonboarding()"
     },
     {
@@ -1521,7 +1548,7 @@
       "source_file": "src\\controllers\\student\\onboarding.controller.ts",
       "source_location": "L157",
       "id": "onboarding_controller_gettutorialdata",
-      "community": 1,
+      "community": 4,
       "norm_label": "gettutorialdata()"
     },
     {
@@ -1584,7 +1611,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_social_controller_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "social.controller.ts"
     },
     {
@@ -1593,7 +1620,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L10",
       "id": "social_controller_getdoubts",
-      "community": 3,
+      "community": 1,
       "norm_label": "getdoubts()"
     },
     {
@@ -1602,7 +1629,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L53",
       "id": "social_controller_createdoubt",
-      "community": 3,
+      "community": 1,
       "norm_label": "createdoubt()"
     },
     {
@@ -1611,7 +1638,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L94",
       "id": "social_controller_getanswers",
-      "community": 3,
+      "community": 1,
       "norm_label": "getanswers()"
     },
     {
@@ -1620,7 +1647,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L122",
       "id": "social_controller_postanswer",
-      "community": 3,
+      "community": 1,
       "norm_label": "postanswer()"
     },
     {
@@ -1629,7 +1656,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L163",
       "id": "social_controller_toggleupvote",
-      "community": 3,
+      "community": 1,
       "norm_label": "toggleupvote()"
     },
     {
@@ -1638,7 +1665,7 @@
       "source_file": "src\\controllers\\student\\social.controller.ts",
       "source_location": "L211",
       "id": "social_controller_reportcontent",
-      "community": 3,
+      "community": 1,
       "norm_label": "reportcontent()"
     },
     {
@@ -1647,7 +1674,7 @@
       "source_file": "src\\controllers\\student\\study.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_study_controller_ts",
-      "community": 1,
+      "community": 4,
       "norm_label": "study.controller.ts"
     },
     {
@@ -1656,7 +1683,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_test_controller_ts",
-      "community": 1,
+      "community": 4,
       "norm_label": "test.controller.ts"
     },
     {
@@ -1665,7 +1692,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L22",
       "id": "test_controller_getavailabletests",
-      "community": 1,
+      "community": 4,
       "norm_label": "getavailabletests()"
     },
     {
@@ -1674,7 +1701,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L88",
       "id": "test_controller_gettestdetails",
-      "community": 1,
+      "community": 4,
       "norm_label": "gettestdetails()"
     },
     {
@@ -1683,7 +1710,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L134",
       "id": "test_controller_starttest",
-      "community": 1,
+      "community": 4,
       "norm_label": "starttest()"
     },
     {
@@ -1692,7 +1719,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L229",
       "id": "test_controller_submittest",
-      "community": 1,
+      "community": 4,
       "norm_label": "submittest()"
     },
     {
@@ -1701,7 +1728,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L333",
       "id": "test_controller_syncattemptanswers",
-      "community": 1,
+      "community": 4,
       "norm_label": "syncattemptanswers()"
     },
     {
@@ -1710,7 +1737,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L390",
       "id": "test_controller_getmyattempts",
-      "community": 1,
+      "community": 4,
       "norm_label": "getmyattempts()"
     },
     {
@@ -1719,7 +1746,7 @@
       "source_file": "src\\controllers\\student\\test.controller.ts",
       "source_location": "L431",
       "id": "test_controller_reportquestion",
-      "community": 1,
+      "community": 4,
       "norm_label": "reportquestion()"
     },
     {
@@ -1728,7 +1755,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L1",
       "id": "src_controllers_student_utility_controller_ts",
-      "community": 1,
+      "community": 7,
       "norm_label": "utility.controller.ts"
     },
     {
@@ -1737,7 +1764,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L12",
       "id": "utility_controller_togglebookmark",
-      "community": 1,
+      "community": 7,
       "norm_label": "togglebookmark()"
     },
     {
@@ -1746,7 +1773,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L60",
       "id": "utility_controller_getbookmarks",
-      "community": 1,
+      "community": 7,
       "norm_label": "getbookmarks()"
     },
     {
@@ -1755,7 +1782,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L172",
       "id": "utility_controller_checkbookmarks",
-      "community": 1,
+      "community": 7,
       "norm_label": "checkbookmarks()"
     },
     {
@@ -1764,7 +1791,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L212",
       "id": "utility_controller_createnote",
-      "community": 1,
+      "community": 7,
       "norm_label": "createnote()"
     },
     {
@@ -1773,7 +1800,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L233",
       "id": "utility_controller_getnotes",
-      "community": 1,
+      "community": 7,
       "norm_label": "getnotes()"
     },
     {
@@ -1782,7 +1809,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L252",
       "id": "utility_controller_updatenote",
-      "community": 1,
+      "community": 7,
       "norm_label": "updatenote()"
     },
     {
@@ -1791,7 +1818,7 @@
       "source_file": "src\\controllers\\student\\utility.controller.ts",
       "source_location": "L277",
       "id": "utility_controller_deletenote",
-      "community": 1,
+      "community": 7,
       "norm_label": "deletenote()"
     },
     {
@@ -1831,12 +1858,30 @@
       "norm_label": "schedulepremiumexpirer()"
     },
     {
+      "label": "sessionCleanup.ts",
+      "file_type": "code",
+      "source_file": "src\\cron\\sessionCleanup.ts",
+      "source_location": "L1",
+      "id": "src_cron_sessioncleanup_ts",
+      "community": 19,
+      "norm_label": "sessioncleanup.ts"
+    },
+    {
+      "label": "startSessionCleanupCron()",
+      "file_type": "code",
+      "source_file": "src\\cron\\sessionCleanup.ts",
+      "source_location": "L5",
+      "id": "sessioncleanup_startsessioncleanupcron",
+      "community": 19,
+      "norm_label": "startsessioncleanupcron()"
+    },
+    {
       "label": "adminAuth.ts",
       "file_type": "code",
       "source_file": "src\\middlewares\\adminAuth.ts",
       "source_location": "L1",
       "id": "src_middlewares_adminauth_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "adminauth.ts"
     },
     {
@@ -1845,7 +1890,7 @@
       "source_file": "src\\middlewares\\adminAuth.ts",
       "source_location": "L9",
       "id": "adminauth_requireadmin",
-      "community": 4,
+      "community": 2,
       "norm_label": "requireadmin()"
     },
     {
@@ -1854,7 +1899,7 @@
       "source_file": "src\\middlewares\\adminAuth.ts",
       "source_location": "L46",
       "id": "adminauth_requirerole",
-      "community": 4,
+      "community": 2,
       "norm_label": "requirerole()"
     },
     {
@@ -1863,7 +1908,7 @@
       "source_file": "src\\middlewares\\auth.ts",
       "source_location": "L1",
       "id": "src_middlewares_auth_ts",
-      "community": 4,
+      "community": 2,
       "norm_label": "auth.ts"
     },
     {
@@ -1872,8 +1917,17 @@
       "source_file": "src\\middlewares\\auth.ts",
       "source_location": "L10",
       "id": "auth_requireauth",
-      "community": 4,
+      "community": 2,
       "norm_label": "requireauth()"
+    },
+    {
+      "label": "rateLimiter.ts",
+      "file_type": "code",
+      "source_file": "src\\middlewares\\rateLimiter.ts",
+      "source_location": "L1",
+      "id": "src_middlewares_ratelimiter_ts",
+      "community": 23,
+      "norm_label": "ratelimiter.ts"
     },
     {
       "label": "adminAuth.routes.ts",
@@ -1881,7 +1935,7 @@
       "source_file": "src\\routes\\adminAuth.routes.ts",
       "source_location": "L1",
       "id": "src_routes_adminauth_routes_ts",
-      "community": 22,
+      "community": 24,
       "norm_label": "adminauth.routes.ts"
     },
     {
@@ -1890,7 +1944,7 @@
       "source_file": "src\\routes\\auth.routes.ts",
       "source_location": "L1",
       "id": "src_routes_auth_routes_ts",
-      "community": 23,
+      "community": 25,
       "norm_label": "auth.routes.ts"
     },
     {
@@ -1899,7 +1953,7 @@
       "source_file": "src\\routes\\admin\\audit.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_audit_routes_ts",
-      "community": 24,
+      "community": 26,
       "norm_label": "audit.routes.ts"
     },
     {
@@ -1908,7 +1962,7 @@
       "source_file": "src\\routes\\admin\\category.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_category_routes_ts",
-      "community": 25,
+      "community": 27,
       "norm_label": "category.routes.ts"
     },
     {
@@ -1917,7 +1971,7 @@
       "source_file": "src\\routes\\admin\\content.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_content_routes_ts",
-      "community": 26,
+      "community": 28,
       "norm_label": "content.routes.ts"
     },
     {
@@ -1926,7 +1980,7 @@
       "source_file": "src\\routes\\admin\\coupon.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_coupon_routes_ts",
-      "community": 27,
+      "community": 29,
       "norm_label": "coupon.routes.ts"
     },
     {
@@ -1935,7 +1989,7 @@
       "source_file": "src\\routes\\admin\\currentAffairs.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_currentaffairs_routes_ts",
-      "community": 28,
+      "community": 30,
       "norm_label": "currentaffairs.routes.ts"
     },
     {
@@ -1944,7 +1998,7 @@
       "source_file": "src\\routes\\admin\\dashboard.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_dashboard_routes_ts",
-      "community": 29,
+      "community": 31,
       "norm_label": "dashboard.routes.ts"
     },
     {
@@ -1953,7 +2007,7 @@
       "source_file": "src\\routes\\admin\\financial.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_financial_routes_ts",
-      "community": 30,
+      "community": 32,
       "norm_label": "financial.routes.ts"
     },
     {
@@ -1962,7 +2016,7 @@
       "source_file": "src\\routes\\admin\\gamification.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_gamification_routes_ts",
-      "community": 31,
+      "community": 33,
       "norm_label": "gamification.routes.ts"
     },
     {
@@ -1971,7 +2025,7 @@
       "source_file": "src\\routes\\admin\\moderation.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_moderation_routes_ts",
-      "community": 32,
+      "community": 34,
       "norm_label": "moderation.routes.ts"
     },
     {
@@ -1980,7 +2034,7 @@
       "source_file": "src\\routes\\admin\\notification.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_notification_routes_ts",
-      "community": 33,
+      "community": 35,
       "norm_label": "notification.routes.ts"
     },
     {
@@ -1989,7 +2043,7 @@
       "source_file": "src\\routes\\admin\\plan.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_plan_routes_ts",
-      "community": 34,
+      "community": 36,
       "norm_label": "plan.routes.ts"
     },
     {
@@ -1998,7 +2052,7 @@
       "source_file": "src\\routes\\admin\\question.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_question_routes_ts",
-      "community": 35,
+      "community": 37,
       "norm_label": "question.routes.ts"
     },
     {
@@ -2007,7 +2061,7 @@
       "source_file": "src\\routes\\admin\\study.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_study_routes_ts",
-      "community": 36,
+      "community": 38,
       "norm_label": "study.routes.ts"
     },
     {
@@ -2016,7 +2070,7 @@
       "source_file": "src\\routes\\admin\\user.routes.ts",
       "source_location": "L1",
       "id": "src_routes_admin_user_routes_ts",
-      "community": 37,
+      "community": 39,
       "norm_label": "user.routes.ts"
     },
     {
@@ -2025,7 +2079,7 @@
       "source_file": "src\\routes\\student\\analysis.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_analysis_routes_ts",
-      "community": 38,
+      "community": 40,
       "norm_label": "analysis.routes.ts"
     },
     {
@@ -2034,7 +2088,7 @@
       "source_file": "src\\routes\\student\\category.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_category_routes_ts",
-      "community": 39,
+      "community": 41,
       "norm_label": "category.routes.ts"
     },
     {
@@ -2043,7 +2097,7 @@
       "source_file": "src\\routes\\student\\currentAffairs.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_currentaffairs_routes_ts",
-      "community": 40,
+      "community": 42,
       "norm_label": "currentaffairs.routes.ts"
     },
     {
@@ -2052,7 +2106,7 @@
       "source_file": "src\\routes\\student\\dashboard.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_dashboard_routes_ts",
-      "community": 41,
+      "community": 43,
       "norm_label": "dashboard.routes.ts"
     },
     {
@@ -2061,7 +2115,7 @@
       "source_file": "src\\routes\\student\\gamification.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_gamification_routes_ts",
-      "community": 42,
+      "community": 44,
       "norm_label": "gamification.routes.ts"
     },
     {
@@ -2070,7 +2124,7 @@
       "source_file": "src\\routes\\student\\home.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_home_routes_ts",
-      "community": 43,
+      "community": 45,
       "norm_label": "home.routes.ts"
     },
     {
@@ -2079,7 +2133,7 @@
       "source_file": "src\\routes\\student\\notification.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_notification_routes_ts",
-      "community": 44,
+      "community": 46,
       "norm_label": "notification.routes.ts"
     },
     {
@@ -2088,7 +2142,7 @@
       "source_file": "src\\routes\\student\\onboarding.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_onboarding_routes_ts",
-      "community": 45,
+      "community": 47,
       "norm_label": "onboarding.routes.ts"
     },
     {
@@ -2097,7 +2151,7 @@
       "source_file": "src\\routes\\student\\premium.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_premium_routes_ts",
-      "community": 46,
+      "community": 48,
       "norm_label": "premium.routes.ts"
     },
     {
@@ -2106,7 +2160,7 @@
       "source_file": "src\\routes\\student\\social.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_social_routes_ts",
-      "community": 47,
+      "community": 49,
       "norm_label": "social.routes.ts"
     },
     {
@@ -2115,7 +2169,7 @@
       "source_file": "src\\routes\\student\\study.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_study_routes_ts",
-      "community": 48,
+      "community": 50,
       "norm_label": "study.routes.ts"
     },
     {
@@ -2124,7 +2178,7 @@
       "source_file": "src\\routes\\student\\test.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_test_routes_ts",
-      "community": 49,
+      "community": 51,
       "norm_label": "test.routes.ts"
     },
     {
@@ -2133,7 +2187,7 @@
       "source_file": "src\\routes\\student\\utility.routes.ts",
       "source_location": "L1",
       "id": "src_routes_student_utility_routes_ts",
-      "community": 50,
+      "community": 52,
       "norm_label": "utility.routes.ts"
     },
     {
@@ -2178,7 +2232,7 @@
       "source_file": "src\\schemas\\onboarding.schema.ts",
       "source_location": "L1",
       "id": "src_schemas_onboarding_schema_ts",
-      "community": 51,
+      "community": 53,
       "norm_label": "onboarding.schema.ts"
     },
     {
@@ -2250,7 +2304,7 @@
       "source_file": "src\\services\\cache.service.ts",
       "source_location": "L25",
       "id": "cache_service_cacheservice_get",
-      "community": 4,
+      "community": 2,
       "norm_label": ".get()"
     },
     {
@@ -2259,7 +2313,7 @@
       "source_file": "src\\services\\cache.service.ts",
       "source_location": "L35",
       "id": "cache_service_cacheservice_set",
-      "community": 1,
+      "community": 4,
       "norm_label": ".set()"
     },
     {
@@ -2277,7 +2331,7 @@
       "source_file": "src\\services\\newsService.ts",
       "source_location": "L1",
       "id": "src_services_newsservice_ts",
-      "community": 0,
+      "community": 2,
       "norm_label": "newsservice.ts"
     },
     {
@@ -2286,7 +2340,7 @@
       "source_file": "src\\services\\newsService.ts",
       "source_location": "L9",
       "id": "newsservice_fetchandstorenews",
-      "community": 0,
+      "community": 2,
       "norm_label": "fetchandstorenews()"
     },
     {
@@ -2295,7 +2349,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L1",
       "id": "src_services_notification_center_service_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "notification-center.service.ts"
     },
     {
@@ -2304,7 +2358,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L28",
       "id": "notification_center_service_normalizestringarray",
-      "community": 2,
+      "community": 3,
       "norm_label": "normalizestringarray()"
     },
     {
@@ -2313,7 +2367,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L39",
       "id": "notification_center_service_buildpushdata",
-      "community": 2,
+      "community": 3,
       "norm_label": "buildpushdata()"
     },
     {
@@ -2322,7 +2376,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L58",
       "id": "notification_center_service_notificationcenterservice",
-      "community": 2,
+      "community": 3,
       "norm_label": "notificationcenterservice"
     },
     {
@@ -2331,7 +2385,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L59",
       "id": "notification_center_service_notificationcenterservice_resolveaudienceusers",
-      "community": 2,
+      "community": 3,
       "norm_label": ".resolveaudienceusers()"
     },
     {
@@ -2340,7 +2394,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L116",
       "id": "notification_center_service_notificationcenterservice_createadminnotification",
-      "community": 2,
+      "community": 3,
       "norm_label": ".createadminnotification()"
     },
     {
@@ -2349,7 +2403,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L190",
       "id": "notification_center_service_notificationcenterservice_getstudentinbox",
-      "community": 2,
+      "community": 3,
       "norm_label": ".getstudentinbox()"
     },
     {
@@ -2358,7 +2412,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L234",
       "id": "notification_center_service_notificationcenterservice_markasread",
-      "community": 2,
+      "community": 3,
       "norm_label": ".markasread()"
     },
     {
@@ -2367,7 +2421,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L262",
       "id": "notification_center_service_notificationcenterservice_markallasread",
-      "community": 2,
+      "community": 3,
       "norm_label": ".markallasread()"
     },
     {
@@ -2376,7 +2430,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L277",
       "id": "notification_center_service_notificationcenterservice_registerdevicetoken",
-      "community": 2,
+      "community": 3,
       "norm_label": ".registerdevicetoken()"
     },
     {
@@ -2385,7 +2439,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L320",
       "id": "notification_center_service_notificationcenterservice_unregisterdevicetoken",
-      "community": 2,
+      "community": 3,
       "norm_label": ".unregisterdevicetoken()"
     },
     {
@@ -2394,7 +2448,7 @@
       "source_file": "src\\services\\notification-center.service.ts",
       "source_location": "L351",
       "id": "notification_center_service_notificationcenterservice_getadminnotifications",
-      "community": 2,
+      "community": 3,
       "norm_label": ".getadminnotifications()"
     },
     {
@@ -2403,7 +2457,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L1",
       "id": "src_services_notification_service_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "notification.service.ts"
     },
     {
@@ -2412,7 +2466,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L17",
       "id": "notification_service_notificationservice",
-      "community": 2,
+      "community": 3,
       "norm_label": "notificationservice"
     },
     {
@@ -2421,7 +2475,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L20",
       "id": "notification_service_notificationservice_chunktokens",
-      "community": 2,
+      "community": 3,
       "norm_label": ".chunktokens()"
     },
     {
@@ -2430,7 +2484,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L28",
       "id": "notification_service_notificationservice_getglobaltopic",
-      "community": 2,
+      "community": 3,
       "norm_label": ".getglobaltopic()"
     },
     {
@@ -2439,7 +2493,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L36",
       "id": "notification_service_notificationservice_triggersync",
-      "community": 2,
+      "community": 3,
       "norm_label": ".triggersync()"
     },
     {
@@ -2448,7 +2502,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L72",
       "id": "notification_service_notificationservice_sendalert",
-      "community": 2,
+      "community": 3,
       "norm_label": ".sendalert()"
     },
     {
@@ -2457,7 +2511,7 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L130",
       "id": "notification_service_notificationservice_subscribetokentoglobaltopic",
-      "community": 2,
+      "community": 3,
       "norm_label": ".subscribetokentoglobaltopic()"
     },
     {
@@ -2466,8 +2520,17 @@
       "source_file": "src\\services\\notification.service.ts",
       "source_location": "L138",
       "id": "notification_service_notificationservice_unsubscribetokenfromglobaltopic",
-      "community": 2,
+      "community": 3,
       "norm_label": ".unsubscribetokenfromglobaltopic()"
+    },
+    {
+      "label": ".sendSessionEvictedNotification()",
+      "file_type": "code",
+      "source_file": "src\\services\\notification.service.ts",
+      "source_location": "L146",
+      "id": "notification_service_notificationservice_sendsessionevictednotification",
+      "community": 3,
+      "norm_label": ".sendsessionevictednotification()"
     },
     {
       "label": "queue.service.ts",
@@ -2475,7 +2538,7 @@
       "source_file": "src\\services\\queue.service.ts",
       "source_location": "L1",
       "id": "src_services_queue_service_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "queue.service.ts"
     },
     {
@@ -2484,7 +2547,7 @@
       "source_file": "src\\services\\queue.service.ts",
       "source_location": "L40",
       "id": "queue_service_queueservice",
-      "community": 2,
+      "community": 3,
       "norm_label": "queueservice"
     },
     {
@@ -2502,7 +2565,7 @@
       "source_file": "src\\services\\queue.service.ts",
       "source_location": "L55",
       "id": "queue_service_queueservice_enqueuealert",
-      "community": 2,
+      "community": 3,
       "norm_label": ".enqueuealert()"
     },
     {
@@ -2529,7 +2592,7 @@
       "source_file": "src\\utils\\mailer.ts",
       "source_location": "L1",
       "id": "src_utils_mailer_ts",
-      "community": 9,
+      "community": 8,
       "norm_label": "mailer.ts"
     },
     {
@@ -2538,7 +2601,7 @@
       "source_file": "src\\utils\\mailer.ts",
       "source_location": "L17",
       "id": "mailer_sendemailotp",
-      "community": 9,
+      "community": 8,
       "norm_label": "sendemailotp()"
     },
     {
@@ -2565,7 +2628,7 @@
       "source_file": "src\\utils\\seedDoubt.js",
       "source_location": "L1",
       "id": "src_utils_seeddoubt_js",
-      "community": 19,
+      "community": 20,
       "norm_label": "seeddoubt.js"
     },
     {
@@ -2574,7 +2637,7 @@
       "source_file": "src\\utils\\seedDoubt.js",
       "source_location": "L6",
       "id": "seeddoubt_seeddoubt",
-      "community": 19,
+      "community": 20,
       "norm_label": "seeddoubt()"
     },
     {
@@ -2583,7 +2646,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L1",
       "id": "src_utils_sms_ts",
-      "community": 7,
+      "community": 6,
       "norm_label": "sms.ts"
     },
     {
@@ -2592,7 +2655,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L20",
       "id": "sms_fast2smsprovider",
-      "community": 7,
+      "community": 6,
       "norm_label": "fast2smsprovider"
     },
     {
@@ -2601,7 +2664,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L23",
       "id": "sms_fast2smsprovider_constructor",
-      "community": 7,
+      "community": 6,
       "norm_label": ".constructor()"
     },
     {
@@ -2610,7 +2673,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L30",
       "id": "sms_fast2smsprovider_sendotp",
-      "community": 7,
+      "community": 6,
       "norm_label": ".sendotp()"
     },
     {
@@ -2619,7 +2682,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L63",
       "id": "sms_firebasephoneprovider",
-      "community": 7,
+      "community": 6,
       "norm_label": "firebasephoneprovider"
     },
     {
@@ -2628,7 +2691,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L64",
       "id": "sms_firebasephoneprovider_sendotp",
-      "community": 7,
+      "community": 6,
       "norm_label": ".sendotp()"
     },
     {
@@ -2637,7 +2700,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L79",
       "id": "sms_mocksmsprovider",
-      "community": 7,
+      "community": 6,
       "norm_label": "mocksmsprovider"
     },
     {
@@ -2646,7 +2709,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L80",
       "id": "sms_mocksmsprovider_sendotp",
-      "community": 7,
+      "community": 6,
       "norm_label": ".sendotp()"
     },
     {
@@ -2655,7 +2718,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L90",
       "id": "sms_createsmsprovider",
-      "community": 7,
+      "community": 6,
       "norm_label": "createsmsprovider()"
     },
     {
@@ -2664,7 +2727,7 @@
       "source_file": "src\\utils\\sms.ts",
       "source_location": "L111",
       "id": "sms_sendsmsotp",
-      "community": 7,
+      "community": 6,
       "norm_label": "sendsmsotp()"
     },
     {
@@ -2673,7 +2736,7 @@
       "source_file": "src\\workers\\notification.worker.ts",
       "source_location": "L1",
       "id": "src_workers_notification_worker_ts",
-      "community": 52,
+      "community": 54,
       "norm_label": "notification.worker.ts"
     },
     {
@@ -2682,7 +2745,7 @@
       "source_file": "src\\workers\\submission.worker.ts",
       "source_location": "L1",
       "id": "src_workers_submission_worker_ts",
-      "community": 53,
+      "community": 55,
       "norm_label": "submission.worker.ts"
     }
   ],
@@ -2722,6 +2785,18 @@
       "_tgt": "adminauth_controller_adminlogin",
       "source": "check_update",
       "target": "adminauth_controller_adminlogin"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src\\controllers\\auth.controller.ts",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_src": "check_update",
+      "_tgt": "auth_controller_generatetokenpair",
+      "source": "check_update",
+      "target": "auth_controller_generatetokenpair"
     },
     {
       "relation": "calls",
@@ -3291,7 +3366,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\index.ts",
-      "source_location": "L117",
+      "source_location": "L120",
       "weight": 1.0,
       "_src": "src_index_ts",
       "_tgt": "index_startserver",
@@ -3339,12 +3414,24 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\config\\redis\\index.ts",
-      "source_location": "L20",
+      "source_location": "L23",
       "weight": 1.0,
       "_src": "src_config_redis_index_ts",
       "_tgt": "index_initializeredis",
       "source": "src_config_redis_index_ts",
       "target": "index_initializeredis",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\config\\redis\\index.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "src_config_redis_index_ts",
+      "_tgt": "index_createredisproxy",
+      "source": "src_config_redis_index_ts",
+      "target": "index_createredisproxy",
       "confidence_score": 1.0
     },
     {
@@ -3483,7 +3570,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L23",
+      "source_location": "L31",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_generateaccesstoken",
@@ -3495,7 +3582,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L27",
+      "source_location": "L35",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_generaterefreshtoken",
@@ -3507,7 +3594,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L35",
+      "source_location": "L43",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_generatetokenpair",
@@ -3519,7 +3606,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L65",
+      "source_location": "L95",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_isemail",
@@ -3531,7 +3618,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L70",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_generateandsendotp",
@@ -3543,7 +3630,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L86",
+      "source_location": "L123",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_requestotp",
@@ -3555,7 +3642,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L102",
+      "source_location": "L142",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_register",
@@ -3567,7 +3654,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L161",
+      "source_location": "L212",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_loginwithpassword",
@@ -3579,7 +3666,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L211",
+      "source_location": "L282",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_verifyotp",
@@ -3591,7 +3678,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L267",
+      "source_location": "L349",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_googlelogin",
@@ -3603,7 +3690,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L320",
+      "source_location": "L402",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_refreshtoken",
@@ -3615,7 +3702,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L382",
+      "source_location": "L464",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_logout",
@@ -3627,7 +3714,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L404",
+      "source_location": "L486",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_logoutall",
@@ -3639,7 +3726,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L427",
+      "source_location": "L509",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_getme",
@@ -3651,7 +3738,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L473",
+      "source_location": "L555",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_updateme",
@@ -3663,7 +3750,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L534",
+      "source_location": "L616",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_forgotpassword",
@@ -3675,7 +3762,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L559",
+      "source_location": "L644",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_resetpassword",
@@ -3687,7 +3774,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L606",
+      "source_location": "L702",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_deleteaccount",
@@ -3699,7 +3786,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L649",
+      "source_location": "L745",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_updatefcmtoken",
@@ -3711,7 +3798,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L678",
+      "source_location": "L774",
       "weight": 1.0,
       "_src": "src_controllers_auth_controller_ts",
       "_tgt": "auth_controller_testpushnotification",
@@ -3720,10 +3807,22 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\controllers\\auth.controller.ts",
+      "source_location": "L812",
+      "weight": 1.0,
+      "_src": "src_controllers_auth_controller_ts",
+      "_tgt": "auth_controller_getsessionstatus",
+      "source": "src_controllers_auth_controller_ts",
+      "target": "auth_controller_getsessionstatus",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L36",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "auth_controller_generatetokenpair",
       "_tgt": "auth_controller_generateaccesstoken",
@@ -3735,7 +3834,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L37",
+      "source_location": "L45",
       "weight": 1.0,
       "_src": "auth_controller_generatetokenpair",
       "_tgt": "auth_controller_generaterefreshtoken",
@@ -3747,7 +3846,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L133",
+      "source_location": "L184",
       "weight": 1.0,
       "_src": "auth_controller_register",
       "_tgt": "auth_controller_generatetokenpair",
@@ -3759,7 +3858,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L183",
+      "source_location": "L254",
       "weight": 1.0,
       "_src": "auth_controller_loginwithpassword",
       "_tgt": "auth_controller_generatetokenpair",
@@ -3771,7 +3870,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L239",
+      "source_location": "L321",
       "weight": 1.0,
       "_src": "auth_controller_verifyotp",
       "_tgt": "auth_controller_generatetokenpair",
@@ -3783,7 +3882,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L292",
+      "source_location": "L374",
       "weight": 1.0,
       "_src": "auth_controller_googlelogin",
       "_tgt": "auth_controller_generatetokenpair",
@@ -3795,7 +3894,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L365",
+      "source_location": "L447",
       "weight": 1.0,
       "_src": "auth_controller_refreshtoken",
       "_tgt": "auth_controller_generatetokenpair",
@@ -3807,7 +3906,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L76",
+      "source_location": "L113",
       "weight": 1.0,
       "_src": "auth_controller_generateandsendotp",
       "_tgt": "auth_controller_isemail",
@@ -3819,7 +3918,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L113",
+      "source_location": "L164",
       "weight": 1.0,
       "_src": "auth_controller_register",
       "_tgt": "auth_controller_isemail",
@@ -3831,7 +3930,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L165",
+      "source_location": "L216",
       "weight": 1.0,
       "_src": "auth_controller_loginwithpassword",
       "_tgt": "auth_controller_isemail",
@@ -3843,7 +3942,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L220",
+      "source_location": "L302",
       "weight": 1.0,
       "_src": "auth_controller_verifyotp",
       "_tgt": "auth_controller_isemail",
@@ -3855,7 +3954,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L539",
+      "source_location": "L621",
       "weight": 1.0,
       "_src": "auth_controller_forgotpassword",
       "_tgt": "auth_controller_isemail",
@@ -3867,7 +3966,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L570",
+      "source_location": "L666",
       "weight": 1.0,
       "_src": "auth_controller_resetpassword",
       "_tgt": "auth_controller_isemail",
@@ -3879,7 +3978,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L90",
+      "source_location": "L127",
       "weight": 1.0,
       "_src": "auth_controller_requestotp",
       "_tgt": "auth_controller_generateandsendotp",
@@ -3891,7 +3990,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\auth.controller.ts",
-      "source_location": "L547",
+      "source_location": "L629",
       "weight": 1.0,
       "_src": "auth_controller_forgotpassword",
       "_tgt": "auth_controller_generateandsendotp",
@@ -3933,6 +4032,18 @@
       "_src": "auth_controller_register",
       "_tgt": "cache_service_cacheservice_get",
       "source": "auth_controller_register",
+      "target": "cache_service_cacheservice_get"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src\\controllers\\auth.controller.ts",
+      "source_location": "L243",
+      "weight": 1.0,
+      "_src": "auth_controller_loginwithpassword",
+      "_tgt": "cache_service_cacheservice_get",
+      "source": "auth_controller_loginwithpassword",
       "target": "cache_service_cacheservice_get"
     },
     {
@@ -6086,6 +6197,18 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src\\controllers\\admin\\user.controller.ts",
+      "source_location": "L179",
+      "weight": 1.0,
+      "_src": "src_controllers_admin_user_controller_ts",
+      "_tgt": "user_controller_harddeleteuser",
+      "source": "src_controllers_admin_user_controller_ts",
+      "target": "user_controller_harddeleteuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src\\controllers\\student\\analysis.controller.ts",
       "source_location": "L10",
       "weight": 1.0,
@@ -7022,6 +7145,18 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src\\cron\\sessionCleanup.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_src": "src_cron_sessioncleanup_ts",
+      "_tgt": "sessioncleanup_startsessioncleanupcron",
+      "source": "src_cron_sessioncleanup_ts",
+      "target": "sessioncleanup_startsessioncleanupcron",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src\\middlewares\\adminAuth.ts",
       "source_location": "L9",
       "weight": 1.0,
@@ -7569,6 +7704,18 @@
       "_tgt": "notification_service_notificationservice_unsubscribetokenfromglobaltopic",
       "source": "notification_service_notificationservice",
       "target": "notification_service_notificationservice_unsubscribetokenfromglobaltopic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\services\\notification.service.ts",
+      "source_location": "L146",
+      "weight": 1.0,
+      "_src": "notification_service_notificationservice",
+      "_tgt": "notification_service_notificationservice_sendsessionevictednotification",
+      "source": "notification_service_notificationservice",
+      "target": "notification_service_notificationservice_sendsessionevictednotification",
       "confidence_score": 1.0
     },
     {

@@ -9,6 +9,7 @@ const router = (0, express_1.Router)();
 router.use(auth_1.requireAuth);
 // Bookmarks
 router.get('/bookmarks', utility_controller_1.getBookmarks);
+router.get('/bookmarks/check', utility_controller_1.checkBookmarks);
 router.post('/bookmarks/toggle', utility_controller_1.toggleBookmark);
 // Notes
 router.get('/notes', utility_controller_1.getNotes);

@@ -165,6 +165,25 @@ class NotificationService {
             }
         });
     }
+    static sendSessionEvictedNotification(tokens, targetUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // FCM silent data push (no banner) — app handles forced logout
+            try {
+                yield admin.messaging().sendEachForMulticast({
+                    tokens,
+                    data: {
+                        type: 'SESSION_EVICTED',
+                        message: 'Logged in on another device',
+                        targetUserId
+                    },
+                    android: { priority: 'high' }
+                });
+            }
+            catch (error) {
+                console.error('Session Evicted Notification Error:', error);
+            }
+        });
+    }
 }
 exports.NotificationService = NotificationService;
 NotificationService.GLOBAL_TOPIC = 'global_updates';

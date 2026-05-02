@@ -17,6 +17,7 @@ const express_1 = require("express");
 const cache_service_1 = require("../services/cache.service");
 const redis_1 = __importDefault(require("../config/redis"));
 const auth_controller_1 = require("../controllers/auth.controller");
+const rateLimiter_1 = require("../middlewares/rateLimiter");
 const biometric_controller_1 = require("../controllers/biometric.controller");
 const auth_1 = require("../middlewares/auth");
 const auth_schema_1 = require("../schemas/auth.schema");
@@ -25,14 +26,15 @@ const router = (0, express_1.Router)();
 // ==========================================
 // PUBLIC ROUTES (No auth required)
 // ==========================================
-router.post('/request-otp', (0, auth_schema_1.validate)(auth_schema_2.requestOtpSchema), auth_controller_1.requestOtp);
+router.post('/request-otp', rateLimiter_1.otpRateLimit, (0, auth_schema_1.validate)(auth_schema_2.requestOtpSchema), auth_controller_1.requestOtp);
 router.post('/verify-otp', (0, auth_schema_1.validate)(auth_schema_2.verifyOtpSchema), auth_controller_1.verifyOtp);
-router.post('/register', (0, auth_schema_1.validate)(auth_schema_2.registerSchema), auth_controller_1.register);
-router.post('/login', (0, auth_schema_1.validate)(auth_schema_2.loginSchema), auth_controller_1.loginWithPassword);
+router.post('/register', rateLimiter_1.registrationRateLimit, (0, auth_schema_1.validate)(auth_schema_2.registerSchema), auth_controller_1.register);
+router.post('/login', rateLimiter_1.loginRateLimit, (0, auth_schema_1.validate)(auth_schema_2.loginSchema), auth_controller_1.loginWithPassword);
 router.post('/google', (0, auth_schema_1.validate)(auth_schema_2.googleLoginSchema), auth_controller_1.googleLogin);
 router.post('/refresh-token', (0, auth_schema_1.validate)(auth_schema_2.refreshTokenSchema), auth_controller_1.refreshToken);
-router.post('/forgot-password', (0, auth_schema_1.validate)(auth_schema_2.forgotPasswordSchema), auth_controller_1.forgotPassword);
+router.post('/forgot-password', rateLimiter_1.otpRateLimit, (0, auth_schema_1.validate)(auth_schema_2.forgotPasswordSchema), auth_controller_1.forgotPassword);
 router.post('/reset-password', (0, auth_schema_1.validate)(auth_schema_2.resetPasswordSchema), auth_controller_1.resetPassword);
+router.get('/session-status', auth_controller_1.getSessionStatus); // Light check, no auth required
 // ==========================================
 // BIOMETRIC ROUTES (Mixed auth)
 // ==========================================

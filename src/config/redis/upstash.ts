@@ -23,6 +23,10 @@ export const createUpstashClient = () => {
       setEx: async (key: string, seconds: number, value: string) => 
         client.set(key, value, { ex: seconds }),
       del: async (key: string) => client.del(key),
+      exists: async (key: string) => client.exists(key),
+      ttl: async (key: string) => client.ttl(key),
+      sendCommand: async (args: string[]) => client.call(args[0], ...args.slice(1)),
+      incr: async (key: string) => client.incr(key),
     };
   } catch (error) {
     console.error('[Redis][Upstash] Initialization failed:', error);
